@@ -1,9 +1,12 @@
-# cuda-c
-Repository for experimenting with CUDA C and C++
+# GPU Kernels with CUDA C/C++
 
-This assumes that your host machine has a CUDA-capable GPU and the `nvcc` (included in the Nvidia CUDA Toolkit).
+## Prerequisites
+You have a host machine with
+- CUDA-capable GPU(s),
+- `nvcc` (Nvidia CUDA compiler), which is included in the Nvidia CUDA Toolkit.
 
-# Usage
+
+## Usage
 Compile with `nvcc`:
 ```bash
 nvcc -o src/saxpy.cu saxpy
