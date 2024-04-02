@@ -1,7 +1,7 @@
 # GPU Kernels with CUDA C/C++
 This repository
 - [x] Implements a GPU kernel for SAXPY using CUDA C/C++.
-- [x] Introduces the architecture of CUDA-capable GPUs, covering parallel computing concepts (including kernels, streaming multiprocessors (SMs), CUDA cores, threads, warps, thread blocks, grids) and GPU memory.
+- [x] Introduces the architecture (software and hardware) of CUDA-capable GPUs, covering parallel computing terms (incl. kernels, streaming multiprocessors (SMs), CUDA cores, threads, warps, thread blocks, grids) and GPU memory (incl. register file, L1 cache, L2 cache, shared memory, global memory, clock rate, bus width, peak memory bandwidth).
 
 ## Setup
 To run the CUDA scripts in this repo, you will need to be set up with a host machine that has a CUDA-capable GPU and `nvcc` (the NVIDIA CUDA compiler) installed.
