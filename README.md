@@ -17,7 +17,7 @@ nvcc -o src/saxpy.cu saxpy
 ### Design: GPU vs CPU
 - GPUs were originally designed to render graphics, whereas CPUs are meant to control the logical flow of any general-purpose program. 
 - Because of these different roles, GPUs have far more processing units and higher aggregate memory **bandwidth** (a measure of the data transfer speed between a GPU and its system), whereas CPUs have more sophisticated instructions processing and and faster **clock speed** (the number of times a second that a circuit operates). 
-![alt text](Design_CPU_GPU.png "Mental model of CPU and GPU")
+![alt text](img/Design_CPU_GPU.png "Mental model of CPU and GPU")
 
 - The transistor counts associated with various functions are represented abstractly by the relative sizes of the different shaded areas. In the figure, green corresponds to computation; gold to instructions processing; purple to L1 cache; blue to higher-level cache, and orange to memory (which should be ~1000x larger than the caches).
 - NOTE: the diagram does not depict the actual hardware design of any particular CPU or GPU. But, the figure does suggest that:
@@ -29,7 +29,7 @@ nvcc -o src/saxpy.cu saxpy
 
 ### Performance: GPU vs CPU
 - The figure below show the peak speed (measured in billions of floating point operations per second, also known as **GFLOPS**). 
-![alt text](Performance_CPU_GPU.png "Mental model of CPU and GPU")
+![alt text](img/Performance_CPU_GPU.png "Mental model of CPU and GPU")
 - Note that single precision floats can often be processed 2x faster than their double precision counterparts. 
     - **Single precision** refers to a 32-bit representation of floating point numbers (also called FP32).
     - **Double precision** refers to a 64-bit representation of floating point numbers (also called FP64). 
@@ -80,7 +80,7 @@ The table below lists and defines the terms related to the different levels of p
     - In SIMD, a single instruction acts on *all the data* in *exactly* the same way. 
     - In SIMT, this restriction is relaxed slightly: selected threads can be activated/deactivated, meaning that instructions and data are processed only on the active threads, while local data remain unchanged on inactive threads. 
     - As a result, SIMT can perform **branching** (though not very efficiently): given an *if-else* starting with `if (condition)`, the threads for which `condition==true` will be active when running statements in the `if` clause, and equivalently for the threads for which `condition==false`. The result will be correct, but inactive threads will do no useful work while waiting for statements in the active clause to complete (see figure). 
-![alt text](SIMT_Branching.png "Branching in SIMT")
+![alt text](img/SIMT_Branching.png "Branching in SIMT")
     - Note that SIMT also exists on CPUs, for example x86_64 has *masked variants* in which a vector instruction can be turned on/off for selected vector lanes according to the true/false values in an extra vector operand.
 
 - **Warp**: at runtime, a thread block is divided into **warps** for **SIMT** execution. 
@@ -114,7 +114,7 @@ The table below lists and defines the terms related to the different levels of p
     - Each register in the SM is designed to hold a single data element (e.g. a single float, which is 4 bytes), unlike a CPU core's vector register which can hold multiple data elements (e.g. 16 floats in AVX-512). This difference is because GPUs are designed for parallel processing of many lightweight threads, each working on a single piece of data.
     - Despite each register in an SM holding less data than a CPU core's vector register, the total capacity of the SM's register file is larger due to the large number of registers. 
 - However, CPUs have larger total cache size: every Intel CPU core comes with L1 and L2 data caches and the size of these plus its share of the shared L3 cache is much larger than the equivalent caches in a GPU, which has nothing beyond a shared L2 cache. The figure below shows the memory hierarchy of the Tesla V100. 
-![alt text](Memory_Tesla_V100.png "Branching in SIMT")
+![alt text](img/Memory_Tesla_V100.png "Branching in SIMT")
 - Depending on where the data starts, it may have to step through multiple layers of cache to enter the registers of an SM and thus become accessible to the CUDA cores. 
 - **Global memory** is (by far) the largest layer, but it is the furthest from the SMs. 
 - Remarks
