@@ -1,10 +1,10 @@
 # GPU Kernels with CUDA C/C++
+This repository
+- [x] Implements a GPU kernel for SAXPY using CUDA C/C++.
+- [x] Introduces the architecture of CUDA-capable GPUs, covering parallel computing concepts (including kernels, streaming multiprocessors (SMs), CUDA cores, threads, warps, thread blocks, grids) and GPU memory.
 
-## Prerequisites
-You have a host machine with
-- CUDA-capable GPU(s),
-- `nvcc` (Nvidia CUDA compiler), which is included in the Nvidia CUDA Toolkit.
-
+## Setup
+To run the CUDA scripts in this repo, you will need to be set up with a host machine that has a CUDA-capable GPU and `nvcc` (the NVIDIA CUDA compiler) installed.
 
 ## Usage
 Compile with `nvcc` and execute:
@@ -13,7 +13,7 @@ nvcc -o src/saxpy.cu saxpy
 ./saxpy
 ```
 
-## GPUs 101
+## GPU Architecture
 ### Design: GPU vs CPU
 - GPUs were originally designed to render graphics, whereas CPUs are meant to control the logical flow of any general-purpose program. 
 - Because of these different roles, GPUs have far more processing units and higher aggregate memory **bandwidth** (a measure of the data transfer speed between a GPU and its system), whereas CPUs have more sophisticated instructions processing and and faster **clock speed** (the number of times a second that a circuit operates). 
