@@ -2,6 +2,7 @@
 This repository
 - [x] Implements a GPU kernel for SAXPY using CUDA C/C++.
 - [x] Introduces the architecture (software and hardware) of CUDA-capable GPUs, covering parallel computing terms (incl. kernels, streaming multiprocessors (SMs), CUDA cores, threads, warps, thread blocks, grids) and GPU memory (incl. register file, L1 cache, L2 cache, shared memory, global memory, clock rate, bus width, peak memory bandwidth).
+- [x] Provides a program that queries the attached CUDA device(s), retrieves information about them using the CUDA Runtime API, and outputs everything to stdout.
 
 ## Setup
 To run the CUDA scripts in this repo, you will need to be set up with a host machine that has a CUDA-capable GPU and `nvcc` (the NVIDIA CUDA compiler) installed.
@@ -182,18 +183,19 @@ The clock rate, bus width and peak memory bandwidth are consistent: `2 * (5.001 
 ## Example: SAXPY using CUDA C/C++ 
 - SAXPY stands for **single-precision A*X Plus Y**. 
 - The complete CUDA C/C++ implementation of SAXPY can be found in [saxpy.cu](src/saxpy.cu).
-- The function `saxpy` is the kernel that runs in parallel on the GPU, whereas the `main` (the usual C/C++ entry point) function is the host code.
+- The function `saxpy` is the kernel that runs in parallel on the GPU, whereas `main` (the usual C/C++ entry point) is the host code.
     ```cpp
     __global__
     void saxpy(int n, float a, float *x, float *y)
     {
-    int i = blockIdx.x*blockDim.x + threadIdx.x;
-    if (i < n) y[i] = a*x[i] + y[i];
+        int i = blockIdx.x*blockDim.x + threadIdx.x;
+        if (i < n) y[i] = a*x[i] + y[i];
     }
     ```
 - `x` and `y` are pointers to the host arrays, allocated with the familiar `malloc`. 
 - `d_x` and `d_y` are pointers to the device arrays allocated with the `cudaMalloc` function from the CUDA runtime API. 
 - The host and the device have separate memory spaces, *both of which can be accessed from the host code*. 
+- 
 
 - The `saxpy` kernel is launched by the statement
     ```cpp
