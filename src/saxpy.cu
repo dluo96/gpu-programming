@@ -32,7 +32,7 @@ int main(void)
   cudaMemcpy(d_x, x, N*sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_y, y, N*sizeof(float), cudaMemcpyHostToDevice);
 
-  // Launch the SAXPY kernel
+  // Invoke the SAXPY kernel
   saxpy<<<(N+255)/256, 256>>>(N, 2.0f, d_x, d_y); // (N+255)/256 calculates the number of blocks needed
 
   // Copy the result back to the host
