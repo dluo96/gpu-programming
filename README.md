@@ -168,16 +168,35 @@ nvcc src/device_info.cu -o device_info
 ```
 For example, on a Tesla T4, this returns
 ```
-Device Number: 0
-  Device name: Tesla T4
-  Memory Clock Rate (kHz): 5001000
-  Memory Bus Width (bits): 256
-  Peak Memory Bandwidth (GB/s): 320.064000
+CUDA Device #0
+  Device name:                   Tesla T4
+  Major revision number:         7
+  Minor revision number:         5
+  Total global memory:           14.58 GB
+  Total shared memory per block: 48 KB
+  Total registers per block:     65536
+  Warp size (threads):           32
+  Maximum memory pitch:          2048 MB
+  Maximum threads per block:     1024
+  Maximum dimension 0 of block:  1024
+  Maximum dimension 1 of block:  1024
+  Maximum dimension 2 of block:  64
+  Maximum dimension 0 of grid:   2147483647
+  Maximum dimension 1 of grid:   65535
+  Maximum dimension 2 of grid:   65535
+  Core clock rate:               1590.00 MHz
+  Total constant memory:         64 KB
+  Texture alignment:             512 bytes
+  Concurrent copy and execution: Yes
+  Kernel execution timeout:      No
+  Memory clock rate:             5.0010 GHz
+  Memory bus width:              256 bits
+  Peak Memory Bandwidth:         320.0640 GB/s
+  Number of SMs:                 40
+  Number of CUDA cores:          2560
 ```
-The clock rate, bus width and peak memory bandwidth are consistent: `2 * (5.001 Gcycles/s) * (256 bits/cycle) / (8 bits/byte)` indeed equals `320.064 GB/s`. The division by `8` follows from the assumption of single precision (FP32). The extra factor of `2` is due to the fact that the Tesla T4 has GDDR memory, which means there are 2 data transfers per cycle. In our analogy, this is akin to having two bowls and using a bowl in each hand. 
+The peak memory bandwidth is computed from the memory clock rate and memory bus width: `2 * (5.001 Gcycles/s) * (256 bits/cycle) / (8 bits/byte) = 320.064 GB/s`. The division by `8` follows from the assumption of single precision (FP32). The extra factor of `2` is due to the fact that the Tesla T4 has GDDR memory, which means there are 2 data transfers per cycle. In our analogy, this is akin to having two bowls and using a bowl in each hand. 
 
-
-## Example: Device Query
 
 
 ## Example: SAXPY using CUDA C/C++ 
