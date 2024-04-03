@@ -19,8 +19,14 @@ nvcc -o src/saxpy.cu saxpy
 - GPUs were originally designed to render graphics, whereas CPUs are meant to control the logical flow of any general-purpose program. 
 - Because of these different roles, GPUs have far more processing units and higher aggregate memory **bandwidth** (a measure of the data transfer speed between a GPU and its system), whereas CPUs have more sophisticated instructions processing and and faster **clock speed** (the number of times a second that a circuit operates). 
 ![alt text](img/Design_CPU_GPU.png "Mental model of CPU and GPU")
+*Mental model of CPU and GPU. Taken from the [CUDA C++ Programming Guide (v.11.2)](https://docs.nvidia.com/cuda/archive/11.2.0/pdf/CUDA_C_Programming_Guide.pdf).*
 
-- The transistor counts associated with various functions are represented abstractly by the relative sizes of the different shaded areas. In the figure, green corresponds to computation; gold to instructions processing; purple to L1 cache; blue to higher-level cache, and orange to memory (which should be ~1000x larger than the caches).
+- The transistor counts associated with various functions are represented abstractly by the relative sizes of the different shaded areas. 
+    - Green represents computation,
+    - Yellow represents instructions processing,
+    - Purple represents L1 cache,
+    - Blue represents higher-level cache,
+    - Orange represents memory, which should be ~1000x larger than the caches.
 - NOTE: the diagram does not depict the actual hardware design of any particular CPU or GPU. But, the figure does suggest that:
     - CPUs can handle more complex workflows than GPUs. 
     - CPUs don't have as many arithmetic logic units (LGUs) or floating point units (FPUs) as GPUs (roughly the small green boxes), but the ALUs and FPUs in a CPU core are individually more capable.
