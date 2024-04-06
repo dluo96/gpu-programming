@@ -1,8 +1,11 @@
-# Compiler settings
-CC=gcc
+hello_world:
+	nvcc src/hello_world.cu -o hello_world -run
 
-compile:
-	${CC} -o src/main src/main.c
+saxpy:
+	nvcc src/saxpy.cu -o saxpy -run
 
-run:
-	/home/daniel/src/main
+device_info:
+	nvcc src/device_info.cu -o device_info -run
+
+matmul:
+	nvcc src/matmul.cu -o matmul -run
