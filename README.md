@@ -13,7 +13,7 @@ To run the CUDA scripts in this repo, you will need to be set up with a host mac
 ### CUDA/C++ "Hello, World!"
 Compile and execute with `nvcc`:
 ```bash
-nvcc src/hello.cu -o hello -run
+nvcc src/hello_world.cu -o hello_world -run
 ```
 Note that `.cu` is the required file extension for CUDA-accelerated programs.
 
@@ -35,7 +35,6 @@ You can profile with `nvprof`:
 ```
 nvprof ./matmul
 ```
-
 ## GPU Architecture
 ### Design: GPU vs CPU
 - GPUs were originally designed to render graphics, whereas CPUs are meant to control the logical flow of any general-purpose program. 
@@ -238,7 +237,6 @@ CUDA Device #0
 The peak memory bandwidth is computed from the memory clock rate and memory bus width: `2 * (5.001 Gcycles/s) * (256 bits/cycle) / (8 bits/byte) = 320.064 GB/s`. The division by `8` follows from the assumption of single precision (FP32). The extra factor of `2` is due to the fact that the Tesla T4 has GDDR memory, which means there are 2 data transfers per cycle. In our analogy, this is akin to having two bowls and using a bowl in each hand. 
 
 
-
 ## Example: SAXPY using CUDA C/C++ 
 - SAXPY stands for **single-precision A*X Plus Y**. 
 - The complete CUDA C/C++ implementation of SAXPY can be found in [saxpy.cu](src/saxpy.cu).
@@ -254,7 +252,6 @@ The peak memory bandwidth is computed from the memory clock rate and memory bus 
 - `x` and `y` are pointers to the host arrays, allocated with the familiar `malloc`. 
 - `d_x` and `d_y` are pointers to the device arrays allocated with the `cudaMalloc` function from the CUDA runtime API. 
 - The host and the device have separate memory spaces, *both of which can be accessed from the host code*. 
-- 
 
 - The `saxpy` kernel is launched by the statement
     ```cpp
