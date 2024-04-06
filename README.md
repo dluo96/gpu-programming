@@ -1,17 +1,39 @@
 # GPU Kernels with CUDA C/C++
 This repository
-- [x] Implements a GPU kernel for SAXPY using CUDA C/C++.
 - [x] Introduces the architecture (software and hardware) of CUDA-capable GPUs, covering parallel computing terms (incl. kernels, streaming multiprocessors (SMs), CUDA cores, threads, warps, thread blocks, grids) and GPU memory (incl. register file, L1 cache, L2 cache, shared memory, global memory, memory clock rate, memory bus width, peak memory bandwidth).
-- [x] Provides a program that queries the attached CUDA device(s), retrieves information about them using the CUDA Runtime API, and outputs everything to stdout.
+- [x] Implements a "Hello, World!" program with CUDA C/C++.
+- [x] Implements a program for querying the attached CUDA device(s), retrieving information about them using the CUDA Runtime API and outputting everything to stdout.
+- [x] Implements a GPU kernel for SAXPY using CUDA C/C++.
+- [x] Implements a GPU kernel for matrix multiplication using CUDA C/C++. 
 
 ## Setup
 To run the CUDA scripts in this repo, you will need to be set up with a host machine that has a CUDA-enabled GPU and `nvcc` (the NVIDIA CUDA compiler) installed.
 
 ## Usage
-Compile with `nvcc` and execute:
+### CUDA/C++ "Hello, World!"
+Compile and execute with `nvcc`:
 ```bash
-nvcc -o src/saxpy.cu saxpy
-./saxpy
+nvcc src/hello.cu -o hello -run
+```
+Note that `.cu` is the required file extension for CUDA-accelerated programs.
+
+### Device Query
+```bash
+nvcc src/device_info.cu -o device_info -run
+```
+
+### SAXPY Kernel with CUDA C/C++
+```bash
+nvcc src/saxpy.cu -o saxpy -run
+```
+
+### Matrix Multiplication Kernel with CUDA C/C++
+```
+nvcc src/matmul.cu -o matmul -run
+```
+You can profile with `nvprof`:
+```
+nvprof ./matmul
 ```
 
 ## GPU Architecture
@@ -45,7 +67,8 @@ nvcc -o src/saxpy.cu saxpy
 
 ### Heterogeneous Applications and the CUDA Programming Model
 - **GPGPUs** (general purpose computing on GPUs): the fact that any application requiring a huge number of floating point operations can gain significant speedup using GPUs. 
-- NVIDIA CUDA is one of the key enabling technologies for GPGPU. It was one of the first APIs to accelerate numerically intensive computations such as matrix multiplications, fast Fourier transforms (FFTs), and more.
+- **CUDA** (Compute Unified Device Architecture) is one of the key enabling technologies for GPGPU. 
+    - Developed by NVIDIA, CUDA was one of the first APIs to accelerate numerically intensive computations such as matrix multiplications, fast Fourier transforms (FFTs), and more.
 - The following lists some fields that have successfully used CUDA and NVIDIA GPUs to accelerate performance:
     - Deep Learning,
     - Computational Fluid Dynamics,
@@ -55,6 +78,10 @@ nvcc -o src/saxpy.cu saxpy
 
 - GPUs are hosted on CPU-based systems. Given a heterogeneous computer with both CPUs and GPUs, it is often a good strategy to offload massively parallel and numerically intensive tasks to the GPU(s). 
 - Most HPC applications contain both highly parallel and less-parallel parts, so it adopting the heterogeneous programming model is often the best way to utilise the strengths of both GPUs and CPUs. 
+
+![alt text](img/Heterogeneous_Programming.png "Heterogeneous Programming with CUDA")
+*Heterogeneous programming with CUDA. Taken from Section 1.4 of the [CUDA C++ Programming Guide (v.11.2)](https://docs.nvidia.com/cuda/archive/11.2.0/pdf/CUDA_C_Programming_Guide.pdf).*
+
 - In fact, the so-called "CUDA programming model" is a heterogeneous model where both the CPU and GPU are used. 
 - In CUDA, the *host* refers to the CPU and its memory, while the *device* refers to the GPU and its memory. 
 - Code run on the host can:
@@ -100,18 +127,23 @@ The table below lists and defines the terms related to the different levels of p
 
 ## Kernels and SMs
 - **Kernel** (*software* concept): a function meant to be executed in parallel on an attached GPU. 
-    - In CUDA, a kernel is identified by the `__global__` specifier in front of an otherwise normal-looking C++ function declaration.
-    - The designation `__global__` means the kernel may be called from either the host or the device, but it will execute on the device.
+    - In CUDA C/C++, a kernel is identified by the `__global__` specifier in front of an otherwise normal-looking C++ function declaration.
+    - The designation `__global__` indicates that the function will run on the device, but may be called from either the host or the device.
     - A kernel is executed `N` times in parallel by `N` different threads on the GPU. Each thread is assigned a unique ID (i.e. an index) that it may use to compute memory addresses and make control decisions. 
-    - Thus, kernel calls must provide special arguments saying how many threads to use on the GPU. This is done via the **execution configuration**, which looks like `fun<<<1, N>>>(x, y, z)`. The first entry (1 here) specifies the number of **thread blocks** to use. The second entry (`N` here) is the number of threads in a thread block. 
+    - Thus, kernel calls must provide special arguments saying how many threads to use on the GPU. This is done via the **execution configuration**, which looks like `fun<<< NUMBER_OF_BLOCKS, NUMBER_OF_THREADS_PER_BLOCK>>>`. The first entry specifies the number of **thread blocks** to use. The second entry is the number of threads in a thread block. 
+    - Unlike much C/C++ code, launching kernels is **asynchronous**: the CPU code will continue to execute without waiting for the kernel launch to complete. A call to `cudaDeviceSynchronize, a function provided by the CUDA runtime, will cause the host (CPU) code to wait until the device (GPU) code completes, and only then resume execution on the CPU.
 - **Streaming multiprocessors** (SMs) are the *hardware* homes of the CUDA cores that execute the threads.
     - The number of SMs that the GPU will actually use to execute a kernel call is limited to the number of of blocks specified in the call (execution configuration). 
-    - For example, for `fun<<<M, N>>>(x, y, z)`, there are *at most* `M` that can be assigned to different SMs. 
+    - For example, for `fun<<<M, N>>>(x, y, z)`, there are *at most* `M` blocks that will be assigned to different SMs. 
     - A block may not be split across different SMs. 
     - If there are more blocks than available SMs, then at least one SM will get more than one block. 
     - By distributing blocks this way, the GPU can run independent blocks in parallel on different SMs. 
     - Each SM then divides the `N` threads in its current block into **warps** of 32 threads for *internal* parallel execution. 
     - Each SM has several levels of memory that can only be accessed by the CUDA cores of that SM: registers, L1 cache, constant caches, and shared memory. 
+
+![alt text](img/SMs_Blocks.png "Automatic scalability: Streaming Multiproccesors (SMs) and Thread Blocks")
+*A multithreaded program is partitioned into blocks of
+threads that execute independently from each other, so that a GPU with more SMs will automatically execute the program in less time than a GPU with fewer SMs. Taken from Section 1.3 of [CUDA C++ Programming Guide (v.11.2)](https://docs.nvidia.com/cuda/archive/11.2.0/pdf/CUDA_C_Programming_Guide.pdf).* 
 
 ## GPU Memory
 ### Memory levels
@@ -123,7 +155,8 @@ The table below lists and defines the terms related to the different levels of p
     - Each register in the SM is designed to hold a single data element (e.g. a single float, which is 4 bytes), unlike a CPU core's vector register which can hold multiple data elements (e.g. 16 floats in AVX-512). This difference is because GPUs are designed for parallel processing of many lightweight threads, each working on a single piece of data.
     - Despite each register in an SM holding less data than a CPU core's vector register, the total capacity of the SM's register file is larger due to the large number of registers. 
 - However, CPUs have larger total cache size: every Intel CPU core comes with L1 and L2 data caches and the size of these plus its share of the shared L3 cache is much larger than the equivalent caches in a GPU, which has nothing beyond a shared L2 cache. The figure below shows the memory hierarchy of the Tesla V100. 
-![alt text](img/Memory_Tesla_V100.png "Branching in SIMT")
+![alt text](img/Memory_Tesla_V100.png "Memory hierarchy in Tesla V100")
+
 - Depending on where the data starts, it may have to step through multiple layers of cache to enter the registers of an SM and thus become accessible to the CUDA cores. 
 - **Global memory** is (by far) the largest layer, but it is the furthest from the SMs. 
 - Remarks
@@ -171,8 +204,7 @@ The table below lists and defines the terms related to the different levels of p
 
 We can use `device_info.cu` to get the clock rate, bus width and peak bandwidth of your GPU(s):
 ```bash
-nvcc src/device_info.cu -o device_info
-./device_info
+nvcc src/device_info.cu -o device_info -run
 ```
 For example, on a Tesla T4, this returns
 ```
@@ -234,6 +266,8 @@ The peak memory bandwidth is computed from the memory clock rate and memory bus 
 
 
 ## References
+- [CUDA C++ Programming Guide (v.11.2)](https://docs.nvidia.com/cuda/archive/11.2.0/pdf/CUDA_C_Programming_Guide.pdf)
+- [CUDA C Programming Guide (v.9.1)](https://docs.nvidia.com/cuda/archive/9.1/pdf/CUDA_C_Programming_Guide.pdf)
 - [Design: GPU vs. CPU](https://cvw.cac.cornell.edu/gpu-architecture/gpu-characteristics/design)
 - [Performance: GPU vs. CPU](https://cvw.cac.cornell.edu/gpu-architecture/gpu-characteristics/performance)
 - [Heterogeneous Applications](https://cvw.cac.cornell.edu/gpu-architecture/gpu-characteristics/applications)
@@ -243,3 +277,5 @@ The peak memory bandwidth is computed from the memory clock rate and memory bus 
 - [Memory Levels](https://cvw.cac.cornell.edu/gpu-architecture/gpu-memory/memory_levels)
 - [Memory Types](https://cvw.cac.cornell.edu/gpu-architecture/gpu-memory/memory_types)
 - [An Easy Introduction to CUDA C and C++](https://developer.nvidia.com/blog/easy-introduction-cuda-c-and-c/)
+- [Introduction to GPU programming with CUDA (C/C++)](https://ulhpc-tutorials.readthedocs.io/en/latest/cuda/)
+- [From Scratch: Matrix Multiplication in CUDA](https://www.youtube.com/watch?v=DpEgZe2bbU0)
