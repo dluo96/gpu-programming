@@ -1,3 +1,7 @@
+
+// This program queries the attached CUDA device(s), retrieving information about them 
+// using the CUDA Runtime API and outputting everything to stdout
+
 #include <stdio.h>
 
 int getNumCudaCores(cudaDeviceProp devProp) {

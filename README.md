@@ -2,7 +2,7 @@
 This repository
 - [x] Introduces the architecture (software and hardware) of CUDA-capable GPUs, covering parallel computing terms (incl. kernels, streaming multiprocessors (SMs), CUDA cores, threads, warps, thread blocks, grids) and GPU memory (incl. register file, L1 cache, L2 cache, shared memory, global memory, memory clock rate, memory bus width, peak memory bandwidth).
 - [x] Implements a "Hello, World!" program with CUDA C/C++.
-- [x] Implements a program for querying the attached CUDA device(s), retrieving information about them using the CUDA Runtime API and outputting everything to stdout.
+- [x] Implements a program for querying the attached CUDA device(s).
 - [x] Implements a GPU kernel for SAXPY using CUDA C/C++.
 - [x] Implements a GPU kernel for matrix multiplication using CUDA C/C++. 
 
