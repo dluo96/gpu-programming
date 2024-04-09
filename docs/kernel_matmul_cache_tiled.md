@@ -5,7 +5,12 @@
 - Regular DRAM is slow, so it would be nice if we could guarantee that data is in the cache when needed. 
 - This would mean fewer memory related stalls and more computation per unit time. 
 - On CUDA-enabled GPUs, a solution is to use **shared memory**: this is **user-managed L1 cache** that is **private per thread block**. 
-    - It is user-managed in the sense that the programmer must declare when variables are stored in shared memory. 
+    - It is user-managed in the sense that the programmer must declare when variables are stored in shared memory. In other words, shared memory is something we have to allocate (similar to global memory). There are two options for how to do this:
+        - **Dynamic** allocation: at runtime, we decide how much shared memory to allocate.
+        - **Static** allocation: at compile time, we can allocate memory, but the compiler needs to know how much shared memory we will use. 
+    
+    - Although the latter can be easier to work with, it is not always possible because we might not need how much memory we need until at runtime. 
+    - In the case of matrix multiplication however, we know it *a priori*, hence we can use **static** allocation. 
 
 ### Cache tiled matrix multiplication
 - Suppose that the matrix `c` is the result of multiplying matrices `a` and `b`. 

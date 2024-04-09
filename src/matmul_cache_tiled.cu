@@ -1,25 +1,19 @@
-// This program computes matrix multiplication (of square matrices)
-// on the GPU using cache tiling and shared memory (user managed L1 cache)
-// to access global memory less often. 
-// See the README for further explanations of what shared memory is. 
+// CUDA C/C++ kernel for computing matrix multiplication (of square matrices)
+// on the GPU using cache tiling and shared memory (user managed L1 cache).
+// See `README.md` for further explanations of shared memory and how it compares
+// to global memory. 
 
 #include <cstdlib>
 #include <cassert>
 #include <iostream>
 
+// Compared to the naive implementation, we will perform the computation in 16x16 
+// (size of our thread blocks) chunks. Previously we read from global memory, 
+// hoping to get lucky in cache hierarchy. Here we guarantee fast memory access
+// by using shared memory. 
 #define SHMEM_SIZE (16 * 16)
 
-// Compared to before, we will do in 16-element (size of our thread blocks) chunks. 
-// Previously we read from main memory, where we hoped to get lucky in cache hierarchy.
-// Here we guarantee fast memory by using shared memory. 
-
 __global__ void matMulCacheTiled(int *a, int *b, int *c, int N) {
-    // Shared memory is something we have to allocate (like global memory)
-    // We can do it dynamically: at runtime, we decide how miuch shared memory to allocate, or
-    // Static allocation: i.e. at compile time: compiler needs to know how much shared memory we will use. 
-    // The latter can be easier to work, but it's not always possible because we might not need how much memory we need until at runtime. 
-    //  In this example, we know it a priori.
-
     // Allocate two statically-sized pieces of shared memory
     // NB: shared memory is private per thread block
     __shared__ int A[SHMEM_SIZE];
@@ -29,55 +23,61 @@ __global__ void matMulCacheTiled(int *a, int *b, int *c, int N) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-    // Tile = size of a thread block, 16x16
-    // We load this into a small matrix
-
-    // Define variables for convenience
+    // Convenience variables
     int tx = threadIdx.x;
     int ty = threadIdx.y;
-    int dim = blockDim.x; // Could be x or y, they are equal
-
-    // Move the tile across the length of the grid.
-    // The number of tiles along one dimension (x or y) is N/dim. 
-    // Padding it leads to (N + dim - 1) / dim. 
-    // Loop over tiles:
+    int dim = blockDim.x; // Could be x or y, they are equal by assumption
+ 
+    // Outer loop over tiles
+    // Number of tiles along one dimension (x or y) is N/dim.
+    // Padding this gives (N + dim - 1) / dim. 
     int tmp = 0;
     for (int i = 0; i < ((N + dim - 1) / dim); i++) {
-        // Thread index within given block
+        // Thread index within the given block
         int threadIdxInBlock = ty * dim + tx;
 
-        // Across rows
-        // row * N tells us which row we are at
-        // i * dim tells us which tile we are at
-        // tx tells us the thread index (within the block)
-        A[threadIdxInBlock] = a[(row * N) + (i * dim) + tx];
+        /* Explanation of loading from global memory into shared memory.
 
-        // Across columns
-        // i * dim * N traverses complete row(s) of blocks
-        // ty * N traverses complete rows within a single row of blocks
-        // col traverses a row
+        Each thread (in the block) loads:
+            One element from `a` (global memory) into `A` (shared memory).
+            One element from `b` (global memory) into `B` (shared memory).
+
+        For `A`:
+            row * N tells us which row we are at,
+            i * dim tells us which tile we are at,
+            tx tells us the thread index (within the block).
+        
+        For `B`:
+            i * dim * N traverses complete row(s) of blocks,
+            ty * N traverses complete rows within a single row of blocks,
+            col traverses a row.
+        
+        Note that while this still requires accessing global memory, it only
+        has to be done once for each element of `a` and `b`. This is because
+        the threads in a thread block can access the shared memory private to
+        that block.
+        */
+        A[threadIdxInBlock] = a[(row * N) + (i * dim) + tx];
         B[threadIdxInBlock] = b[(i * dim * N) + (ty * N) + col];
 
-        // NB: in the above we still have to access global memory. 
-        // But we only have to do it once per thread block. 
-
-        // Before calculating values, ensure that every thread within 
-        // the thread block has loaded into shared memory.
-        // This is crucial threads will use the values loaded by other threads
+        // Before calculating values, ensure that every thread in the block has
+        // loaded its values (from `a` and `b`) into shared memory (`A` and `B`).
+        // This is crucial because every thread will use values loaded by other 
+        // threads in its computation.
         __syncthreads();
 
-        // Calculate all temporary values for this tile
-        // Recall we are splitting our NxN matrix multiplication into 
-        // chunks of 16x16 multiplication
-        // Accumulate the partial results
+        // Calculate partial result (dot product of row in `A` and column in `B`
+        // and accumulate.
+        // 
         for (int j = 0; j < dim; j++) {
             tmp += A[ty * dim + j] * B[j * dim + tx];
         }
-        // Ensure all threads are done with values in shared memory
-        // before loading in new ones
+
+        // Ensure all threads have finished their calculations and thus no longer
+        // need the current values in shared memory.
         __syncthreads();
 
-        // Write result back to main memory
+        // Write result back to main (global) memory
         c[row * N + col] = tmp;
     }
 
