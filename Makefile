@@ -9,3 +9,12 @@ device_info:
 
 matmul:
 	nvcc src/matmul.cu -o matmul -run
+
+matmul_cache_tiled:
+	nvcc src/matmul_cache_tiled.cu -o matmul_cache_tiled -run
+
+matmul_compare:
+	nvcc src/matmul.cu -o matmul
+	nvcc src/matmul_cache_tiled.cu -o matmul_cache_tiled
+	nvprof ./matmul
+	nvprof ./matmul_cache_tiled
