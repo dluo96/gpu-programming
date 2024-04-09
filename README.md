@@ -7,7 +7,7 @@ This repository is a collection of notes and scripts I am compiling (no pun inte
 - [x] Implements a ["Hello, World!" program](src/hello_world.cu) with CUDA C/C++.
 - [x] Implements a GPU kernel (using CUDA C/C++) for [SAXPY (single-precision A*X Plus Y)](src/saxpy.cu).
 - [x] Implements a GPU kernel (using CUDA C/C++) for [matrix multiplication](src/matmul.cu). 
-- [x] Implements a GPU kernel (using CUDA C/C++) for [cache tiled matrix multiplication](src/cache_tiled_matmul.cu). 
+- [x] Implements a GPU kernel (using CUDA C/C++) for [cache tiled matrix multiplication](src/matmul_cache_tiled.cu). 
 
 ## Setup
 To run the CUDA scripts in this repo, you will need to be set up with a host machine that has a CUDA-enabled GPU and `nvcc` (the NVIDIA CUDA compiler) installed.
