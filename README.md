@@ -3,7 +3,7 @@ This repository is a collection of notes and scripts I am compiling (no pun inte
 
 ### Notes
 - [x] Introduction to [GPU compute](docs/gpu_compute.md) for CUDA-capable GPUs. Covers parallel computing terms including kernels, streaming multiprocessors (SMs), CUDA cores, threads, warps, thread blocks, grids.
-- [x] Introduction to [GPU memory](docs/GPU_Memory.md). Covers concepts including registers, L1 cache, L2 cache, shared memory, global memory, memory clock rate, memory bus width, peak memory bandwidth.
+- [x] Introduction to [GPU memory](docs/gpu_memory.md). Covers concepts including registers, L1 cache, L2 cache, shared memory, global memory, memory clock rate, memory bus width, peak memory bandwidth.
 - [ ] Introduction to the **NVIDIA CUDA Compiler (NVCC) Driver**.
 - [ ] Introduction to the **NVIDIA Nsight Compute CLI (ncu)**.
  
