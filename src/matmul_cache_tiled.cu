@@ -68,7 +68,6 @@ __global__ void matMulCacheTiled(int *a, int *b, int *c, int N) {
 
         // Calculate partial result (dot product of row in `A` and column in `B`
         // and accumulate.
-        // 
         for (int j = 0; j < dim; j++) {
             tmp += A[ty * dim + j] * B[j * dim + tx];
         }
