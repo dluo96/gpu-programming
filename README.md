@@ -9,21 +9,21 @@ This repository is a collection of notes and scripts I am compiling (no pun inte
  
 
 ### CUDA C/C++ Kernels
-- [x] Implements a ["Hello, World!" program](src/hello_world.cu) with CUDA C/C++.
-- [x] Implements a GPU kernel (using CUDA C/C++) for [SAXPY (single-precision A*X Plus Y)](src/saxpy.cu).
-- [x] Implements a GPU kernel (using CUDA C/C++) for [matrix multiplication](src/matmul.cu). 
-- [x] Implements a GPU kernel (using CUDA C/C++) for [cache tiled matrix multiplication](src/matmul_cache_tiled.cu). 
+- [x] CUDA C/C++ ["Hello, World!" program](src/hello_world.cu).
+- [x] GPU kernel (using CUDA C/C++) for [SAXPY (single-precision A*X Plus Y)](src/saxpy.cu).
+- [x] GPU kernel (using CUDA C/C++) for [matrix multiplication](src/matmul.cu). 
+- [x] GPU kernel (using CUDA C/C++) for [cache tiled matrix multiplication](src/matmul_cache_tiled.cu). 
 - [ ] GPU kernel for 1D convolution.
 - [ ] GPU kernel for tiled 1D convolution.
 - [ ] GPU kernel for 2D convolution.
 - [ ] GPU kernel for sum reduction. 
 
 ### Analysis Programs
-- [x] [Program](src/device_info.cu) that returns the properties of the attached CUDA GPU(s).
+- [x] [Program](src/device_info.cu) that extracts the properties of the attached CUDA device(s).
 - [ ] Profiling with `clock()`.
 
 ## Setup
-To run the CUDA scripts in this repo, you will need to be set up with a host machine that has a CUDA-enabled GPU and `nvcc` (the NVIDIA CUDA Compiler) installed.
+To run the CUDA scripts in this repo, you will need to be set up with a host machine that has a CUDA-enabled GPU and `nvcc` installed.
 
 ## Usage
 ### CUDA C/C++ "Hello, World!"
