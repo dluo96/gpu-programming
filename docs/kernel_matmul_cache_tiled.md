@@ -73,6 +73,16 @@
 
 *Figure 1. Cache tiled matrix multiplication.*
 
-### Naive vs. cache tiled matrix multiplication
-- `nvprof` can be used to compare the speed difference between the naive and cache tiled implementation of matrix multiplication. To do this, simply run `make matmul_compare` from the root of the repo. 
-- For example, on an NVIDIA Tesla T4 GPU, 
+### Performance comparison: naive vs. cache tiled implementation
+- `nvprof` can be used to compare the difference in speed between the naive and cache tiled implementation of matrix multiplication. To do this, simply run `make matmul_compare` from the root of the repo. 
+- For example, on an NVIDIA Tesla T4 GPU and `N = 2^12` (`a`, `b`, `c` are all 4096 x 4096):
+    - Naive implementation takes ~488 ms.
+    - Cache tiled implementation takes ~327 ms.
+
+    The latter is ~33% faster. 
+
+- For `N = 2^14` (`a`, `b`, `c` are all 16384 x 16384 matrices):
+    - Naive implementation takes ~37.1 s.
+    - Cache tiled implementation takes ~18.4 s.
+
+    The latter is ~2x faster. 
