@@ -59,7 +59,7 @@ void verify_result(int *array, int *mask, int *result, int N, int M) {
 
 int main() {
     // Size of input (and output) array
-    int N = 1 << 10;
+    int N = 1 << 20;
     size_t bytes = N * sizeof(int);
 
     // Size of convolution mask
