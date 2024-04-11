@@ -67,9 +67,10 @@ int main() {
     size_t maskBytes = M * sizeof(int);
 
     // Allocate host memory
-    int *array = new int[N];
-    int *mask = new int[M];
-    int *result = new int[N];
+    int *array, *mask, *result;
+    array = (int*)malloc(bytes); 
+    mask = (int*)malloc(maskBytes);
+    result = (int*)malloc(bytes);
 
     // Initialise
     for(int i = 0; i < N; i++) {
