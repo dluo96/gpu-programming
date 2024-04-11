@@ -103,5 +103,16 @@ int main() {
     verify_result(array, mask, result, N, M);
 
     printf("Successfully computed 1D convolution!\n");
+
+    // Free allocated memory on the device
+    cudaFree(d_array);
+    cudaFree(d_mask);
+    cudaFree(d_result);
+
+    // Free allocated memory on the host
+    free(array);
+    free(d_mask);
+    free(d_result);
+
     return 0;
 }
