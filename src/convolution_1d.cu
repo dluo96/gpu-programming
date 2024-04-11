@@ -15,7 +15,7 @@
 //      M = number of elements in `mask`
 __global__ void convolution_1d(int *array, int *mask, int *result, int N, int M) {
     // Global thread ID
-    tid = blockIdx.x * blockDim.x + threadIdx.x
+    tid = blockIdx.x * blockDim.x + threadIdx.x;
 
     // Radius of convolution mask
     int radius = M / 2;
