@@ -15,19 +15,19 @@
 //      M = number of elements in `mask`
 __global__ void convolution_1d(int *array, int *mask, int *result, int N, int M) {
     // Global thread ID
-    tid = blockIdx.x * blockDim.x + threadIdx.x;
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
     // Radius of convolution mask
     int radius = M / 2;
 
     // Index of first element (of the input array)
     // that is needed by the thread in question
-    start = tid - radius;
+    int start = tid - radius;
 
     // Iterate over elements of mask
     int tmp = 0;
     for(int j = 0; j < M; j++) {
-        arrayIdx = start + j; 
+        int arrayIdx = start + j; 
         // Ignore out-of-bound elements of input array
         if((arrayIdx >= 0) && (arrayIdx < N)) {
             tmp += array[arrayIdx] * mask[j];
@@ -47,7 +47,7 @@ void verify_result(int *array, int *mask, int *result, int N, int M) {
         start = i - radius;
         tmp = 0;
         for(int j = 0; j < M; j++) {
-            arrayIdx = start + j;
+            int arrayIdx = start + j;
             // Ignore out-of-bound elements of input array
             if((arrayIdx >= 0) && (arrayIdx < N)) {
                 tmp += array[arrayIdx] * mask[j];
@@ -72,7 +72,7 @@ int main() {
     int *result = new int[N];
 
     // Initialise
-    for(int i = 0; i < n; i++) {
+    for(int i = 0; i < N; i++) {
         array = rand() % 100;
     }
     for(int i = 0; i < M; i++) {
