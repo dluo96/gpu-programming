@@ -67,9 +67,10 @@ int main() {
     size_t maskBytes = M * sizeof(int);
 
     // Allocate host memory
-    int *array = new int[N];
-    int *mask = new int[M];
-    int *result = new int[N];
+    int *array, *mask, *result;
+    array = (float*)malloc(bytes); 
+    mask = (float*)malloc(maskBytes);
+    result = (float*)malloc(bytes);
 
     // Initialise
     for(int i = 0; i < N; i++) {
@@ -100,5 +101,3 @@ int main() {
     printf("Successfully computed 1D convolution!\n");
     return 0;
 }
-
-
