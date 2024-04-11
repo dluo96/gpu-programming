@@ -23,5 +23,5 @@ convolution_1d:
 	nvcc src/convolution_1d.cu -o convolution_1d -run
 
 clean:
-	rm device_info hello_world saxpy matmul matmul_cache_tiled
+	rm device_info hello_world saxpy matmul matmul_cache_tiled convolution_1d
 	
