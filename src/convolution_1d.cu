@@ -53,7 +53,7 @@ void verify_result(int *array, int *mask, int *result, int N, int M) {
                 tmp += array[arrayIdx] * mask[j];
             }
         }
-        assert(result[i] == tmp);
+        assert(tmp == result[i]);
     }
 }
 
@@ -94,7 +94,7 @@ int main() {
     int blocks = (N + threads - 1) / threads;
 
     // Invoke kernel
-    convolution_1d<<<blocks, threads>>>(array, mask, result, N, M);
+    convolution_1d<<<blocks, threads>>>(d_array, d_mask, d_result, N, M);
 
     // Copy result from device to host
     cudaMemcpy(result, d_result, bytes, cudaMemcpyDeviceToHost);
@@ -111,8 +111,8 @@ int main() {
 
     // Free allocated memory on the host
     free(array);
-    free(d_mask);
-    free(d_result);
+    free(mask);
+    free(result);
 
     return 0;
 }
