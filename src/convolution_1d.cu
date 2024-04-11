@@ -68,9 +68,9 @@ int main() {
 
     // Allocate host memory
     int *array, *mask, *result;
-    array = (float*)malloc(bytes); 
-    mask = (float*)malloc(maskBytes);
-    result = (float*)malloc(bytes);
+    array = (int*)malloc(bytes); 
+    mask = (int*)malloc(maskBytes);
+    result = (int*)malloc(bytes);
 
     // Initialise
     for(int i = 0; i < N; i++) {
