@@ -67,10 +67,9 @@ int main() {
     size_t maskBytes = M * sizeof(int);
 
     // Allocate host memory
-    int *array, *mask, *result;
-    array = (int*)malloc(bytes); 
-    mask = (int*)malloc(maskBytes);
-    result = (int*)malloc(bytes);
+    int *array = new int[N];
+    int *mask = new int[M];
+    int *result = new int[N];
 
     // Initialise
     for(int i = 0; i < N; i++) {
@@ -78,12 +77,17 @@ int main() {
     }
     for(int i = 0; i < M; i++) {
         mask[i] = rand() % 10;
-    }    
+    }
 
     // Allocate device memory
-    cudaMallocManaged(&array, bytes);
-    cudaMallocManaged(&mask, maskBytes);
-    cudaMallocManaged(&result, bytes);
+    int *d_array, *d_mask, *d_result;
+    cudaMalloc(&d_array, bytes);
+    cudaMalloc(&d_mask, maskBytes);
+    cudaMalloc(&d_result, bytes);
+
+    // Copy input array and mask from host to device
+    cudaMemcpy(d_array, array, bytes, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_mask, mask, maskBytes, cudaMemcpyHostToDevice);
 
     // Define threads per block and number of blocks
     int threads = 256;
@@ -92,8 +96,8 @@ int main() {
     // Invoke kernel
     convolution_1d<<<blocks, threads>>>(array, mask, result, N, M);
 
-    // Since using `cudaMallocManaged`, we call a sync operation
-    cudaDeviceSynchronize();
+    // Copy result from device to host
+    cudaMemcpy(result, d_result, bytes, cudaMemcpyDeviceToHost);
 
     // Verify the result
     verify_result(array, mask, result, N, M);
