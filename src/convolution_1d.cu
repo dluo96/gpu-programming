@@ -73,7 +73,7 @@ int main() {
 
     // Initialise
     for(int i = 0; i < N; i++) {
-        array = rand() % 100;
+        array[i] = rand() % 100;
     }
     for(int i = 0; i < M; i++) {
         mask[i] = rand() % 10;
