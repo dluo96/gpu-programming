@@ -2,7 +2,7 @@
 
 #include <cstdlib>
 
-#define MASK_LEN 7;
+#define MASK_LEN 7
 
 // Allocate constant memory: `MASK` will be visible inside the kernel
 __constant__ int MASK[MASK_LEN];
@@ -19,10 +19,10 @@ __global__ void convolution_1d_constant_memory(int *input, int *output, int N) {
         int tmp = 0;
         // Iterate over length of the mask
         for(int i = 0; i < MASK_LEN; i++) {
-            arrayIdx = start + i;
+            int arrayIdx = start + i;
             // Check if we are off either edge of the input array
             if((arrayIdx >= 0) && (arrayIdx < N)) {
-                tmp += input[arrayIdx] * mask[i];
+                tmp += input[arrayIdx] * MASK[i];
             }
         }
         output[tid] = tmp;
@@ -41,10 +41,10 @@ void verify_result(int *input, int *mask, int *output, int N, int M) {
             int arrayIdx = start + j;
             // Ignore out-of-bound elements of input array
             if((arrayIdx >= 0) && (arrayIdx < N)) {
-                tmp += array[arrayIdx] * mask[j];
+                tmp += input[arrayIdx] * mask[j];
             }
         }
-        assert(tmp == result[i]);
+        assert(tmp == output[i]);
     }
 }
 
