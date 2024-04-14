@@ -15,7 +15,7 @@ This repository is a collection of notes and scripts I am compiling (no pun inte
 - [x] GPU kernel for [cache tiled matrix multiplication](src/matmul_cache_tiled.cu). 
 - [x] GPU kernel for [1D convolution](src/convolution_1d.cu).
 - [x] GPU kernel for [1D convolution utilising constant memory](src/convolution_1d_constant_memory.cu).
-- [x] GPU kernel for tiled 1D convolution.
+- [ ] GPU kernel for tiled 1D convolution.
 - [ ] GPU kernel for 2D convolution.
 - [ ] GPU kernel for sum reduction. 
 
