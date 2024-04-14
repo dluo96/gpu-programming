@@ -1,6 +1,7 @@
 // CUDA C/C++ implementation of 1D convolution using constant memory.
 
 #include <cstdlib>
+#include <cassert>
 
 #define MASK_LEN 7
 
