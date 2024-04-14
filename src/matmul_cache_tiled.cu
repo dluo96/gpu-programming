@@ -140,6 +140,6 @@ int main() {
     // Verify the result on the CPU
     verify_result(a, b, c, N);
 
-    printf("Program completed successfully!\n");
+    printf("Success! Computed matrix multiplication optimised with cache tiling and shared memory.\n");
     return 0;
 }

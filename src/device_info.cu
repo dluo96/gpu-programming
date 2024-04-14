@@ -75,7 +75,7 @@ int main()
 {
     int devCount;
     cudaGetDeviceCount(&devCount);
-    printf("CUDA Device Query...\n");
+    printf("Querying CUDA device(s) ...\n");
     printf("There are %d CUDA devices.\n", devCount);
 
     for (int i = 0; i < devCount; ++i)

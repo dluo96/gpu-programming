@@ -103,7 +103,7 @@ int main() {
     // Verify the result
     verify_result(array, mask, result, N, M);
 
-    printf("Successfully computed 1D convolution!\n");
+    printf("Success! Computed 1D convolution (naive implementation).\n");
 
     // Free allocated memory on the device
     cudaFree(d_array);

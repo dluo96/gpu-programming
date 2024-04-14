@@ -93,7 +93,7 @@ int main() {
     // Verify the result
     verify_result(a, b, c, N);
 
-    printf("Program completed successfully!\n");
+    printf("Success! Computed matrix multiplication (naive implementation).\n");
     return 0;
 }
 

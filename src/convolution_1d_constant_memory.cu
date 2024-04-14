@@ -94,7 +94,7 @@ int main() {
     // Verify result
     verify_result(input, mask, output, N, MASK_LEN);
 
-    printf("Success! Computed 1D convolution with mask stored in constant memory.\n");
+    printf("Success! Computed 1D convolution optimised with the use of constant memory.\n");
 
     return 0;
 }
