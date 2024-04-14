@@ -1,11 +1,14 @@
-// CUDA C/C++ implementation of 1D convolution using constant memory.
+// This programs implement a CUDA C/C++ kernel for
+// a 1D convolution utilising constant memory for
+// increased performance. 
 
 #include <cstdlib>
 #include <cassert>
 
 #define MASK_LEN 7
 
-// Allocate constant memory: `MASK` will be visible inside the kernel
+// Allocate constant memory: `MASK` will be visible inside the kernel.
+// Using constant memory means we avoid cache misses.
 __constant__ int MASK[MASK_LEN];
 
 // Do not need to pass mask to function since `MASK` is available
@@ -89,6 +92,8 @@ int main() {
 
     // Verify result
     verify_result(input, mask, output, N, MASK_LEN);
+
+    printf("Success! Computed 1D convolution with mask stored in constant memory.\n");
 
     return 0;
 }

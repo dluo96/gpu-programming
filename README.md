@@ -10,11 +10,12 @@ This repository is a collection of notes and scripts I am compiling (no pun inte
 
 ### CUDA C/C++ Kernels
 - [x] CUDA C/C++ ["Hello, World!" program](src/hello_world.cu).
-- [x] GPU kernel (using CUDA C/C++) for [SAXPY (single-precision A*X Plus Y)](src/saxpy.cu).
-- [x] GPU kernel (using CUDA C/C++) for [matrix multiplication](src/matmul.cu). 
-- [x] GPU kernel (using CUDA C/C++) for [cache tiled matrix multiplication](src/matmul_cache_tiled.cu). 
+- [x] GPU kernel for [SAXPY (single-precision A*X Plus Y)](src/saxpy.cu).
+- [x] GPU kernel for [matrix multiplication](src/matmul.cu). 
+- [x] GPU kernel for [cache tiled matrix multiplication](src/matmul_cache_tiled.cu). 
 - [x] GPU kernel for [1D convolution](src/convolution_1d.cu).
-- [ ] GPU kernel for tiled 1D convolution.
+- [x] GPU kernel for [1D convolution utilising constant memory](src/convolution_1d_constant_memory.cu).
+- [x] GPU kernel for tiled 1D convolution.
 - [ ] GPU kernel for 2D convolution.
 - [ ] GPU kernel for sum reduction. 
 
