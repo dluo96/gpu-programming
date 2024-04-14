@@ -69,7 +69,7 @@ int main() {
     init_array(input, N);
 
     // Allocate space on host for mask
-    int *mask;
+    int *mask = new int[MASK_LEN];
     init_array(mask, MASK_LEN);
 
     // Because we have allocated space for the mask 
