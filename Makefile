@@ -22,6 +22,9 @@ matmul_compare:
 convolution_1d:
 	nvcc src/convolution_1d.cu -o convolution_1d -run
 
+convolution_1d_constant_memory:
+	nvcc src/convolution_1d_constant_memory.cu -o convolution_1d_constant_memory -run
+
 clean:
 	rm device_info hello_world saxpy matmul matmul_cache_tiled convolution_1d
 	
