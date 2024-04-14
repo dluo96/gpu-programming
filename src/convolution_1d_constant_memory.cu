@@ -70,7 +70,7 @@ int main() {
 
     // Allocate space on host for mask
     int *mask;
-    init_array(&mask, MASK_LEN);
+    init_array(mask, MASK_LEN);
 
     // Because we have allocated space for the mask 
     // on the GPU directly, we have to directly copy it.
@@ -87,7 +87,7 @@ int main() {
     cudaDeviceSynchronize();
 
     // Verify result
-    verify_result(intput, mask output, N, MASK_LEN);
+    verify_result(intput, mask, output, N, MASK_LEN);
 
     return 0;
 }
