@@ -87,7 +87,7 @@ int main() {
     cudaDeviceSynchronize();
 
     // Verify result
-    verify_result(intput, mask, output, N, MASK_LEN);
+    verify_result(input, mask, output, N, MASK_LEN);
 
     return 0;
 }
