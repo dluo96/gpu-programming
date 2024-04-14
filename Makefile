@@ -26,5 +26,5 @@ convolution_1d_constant_memory:
 	nvcc src/convolution_1d_constant_memory.cu -o convolution_1d_constant_memory -run
 
 clean:
-	rm device_info hello_world saxpy matmul matmul_cache_tiled convolution_1d
+	rm device_info hello_world saxpy matmul matmul_cache_tiled convolution_1d convolution_1d_constant_memory
 	
