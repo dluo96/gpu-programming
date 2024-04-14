@@ -2,6 +2,7 @@
 // a 1D convolution utilising constant memory for
 // increased performance. 
 
+#include <stdio.h>
 #include <cstdlib>
 #include <cassert>
 
