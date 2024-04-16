@@ -31,6 +31,9 @@ convolution_1d_compare:
 	nvprof ./convolution_1d
 	nvprof ./convolution_1d_constant_memory
 
+sum_reduction:
+	nvcc src/parallel_reduction/parallel_reduction.cu -o parallel_reduction -run
+
 clean:
 	rm device_info hello_world saxpy matmul matmul_cache_tiled convolution_1d convolution_1d_constant_memory
 	
