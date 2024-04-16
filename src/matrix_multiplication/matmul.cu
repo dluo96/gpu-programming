@@ -62,9 +62,9 @@ int main() {
     // Allocate host memory
     int *a, *b, *c;
 
-    // Allocate device memory
-    // With `cudaMallocManaged` (as opposed to `cudaMalloc`), the CUDA runtime 
-    // manages the transfer of memory back and forth for you, so memcpy isn't needed
+    // Allocate unified memory, which is accessible from the CPU or the GPU - with `cudaMallocManaged` 
+    // (rather than `cudaMalloc`), the CUDA runtime manages the transfer of memory back and forth for 
+    // you, so memcpy isn't needed
     cudaMallocManaged(&a, bytes);
     cudaMallocManaged(&b, bytes);
     cudaMallocManaged(&c, bytes);
