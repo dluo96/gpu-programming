@@ -47,6 +47,37 @@ __global__ void sum_reduction_v1(int *g_input, int *g_output, int numElements) {
 // Compared to Version 1, this kernel replaces the divergent
 // branch in the inner loop with a strided index and non-divergent 
 // branch. This leads to a new drawback: shared memory bank conflicts. 
+__global__ void sum_reduction_v2(int *g_input, int *g_output, int numElements) {
+    extern __shared__ unsigned int sdata[];
+    unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int ltid = threadIdx.x;
+
+     if (tid < numElements) {
+        sdata[ltid] = g_input[tid];
+    } else {
+        sdata[ltid] = 0;
+    }
+    __syncthreads();
+
+    // Perform reduction in shared memory. Still uses interleaved addressing,
+    // but threads being active/idle no longer depends on whether thread IDs
+    // are powers of 2. Consecutive thread IDs now run, solving the issue of
+    // threads diverging within a warp. 
+    // However, it introduces bank conflicts in shared memory: ...
+    for(unsigned int s = 1; s < blockDim.x; s *= 2) {
+        unsigned int updateIdx = 2 * s * ltid; // Index of element to update
+
+        if(updateIdx < blockDim.x) {
+            sdata[updateIdx] += sdata[updateIdx + s];
+        }
+        __syncthreads();
+    }
+
+    // Write result for this block from shared to global memory
+    if (ltid == 0) {
+        g_output[blockIdx.x] = sdata[0];
+    }
+}
 
 // Version 3: Sequential Addressing.
 // Compared to Version 2, this kernel replaces the
