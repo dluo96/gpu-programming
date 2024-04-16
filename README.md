@@ -9,15 +9,16 @@ This repository is a collection of notes and scripts I am compiling (no pun inte
  
 
 ### CUDA C/C++ Kernels
-- [x] CUDA C/C++ ["Hello, World!" program](src/hello_world.cu).
-- [x] GPU kernel for [SAXPY (single-precision A*X Plus Y)](src/saxpy.cu).
-- [x] GPU kernel for [matrix multiplication](src/matmul.cu). 
-- [x] GPU kernel for [cache tiled matrix multiplication](src/matmul_cache_tiled.cu). 
-- [x] GPU kernel for [1D convolution](src/convolution_1d.cu).
-- [x] GPU kernel for [1D convolution utilising constant memory](src/convolution_1d_constant_memory.cu).
-- [ ] GPU kernel for tiled 1D convolution.
-- [ ] GPU kernel for 2D convolution.
-- [ ] GPU kernel for sum reduction. 
+- [x] CUDA C/C++ ["Hello, World!"](src/hello_world.cu).
+- [x] [SAXPY (single-precision A*X Plus Y)](src/saxpy/saxpy.cu).
+- [x] [Matrix multiplication](src/matrix_multiplication/matmul.cu). 
+- [x] [Matrix multiplication with cache tiling](src/matrix_multiplication/matmul_cache_tiled.cu). 
+- [x] [1D convolution](src/convolution/convolution_1d.cu).
+- [x] [1D convolution with constant memory](src/convolution/convolution_1d_constant_memory.cu).
+- [ ] 1D convolution with tiling.
+- [ ] 2D convolution.
+- [x] [Sum reduction](src/parallel_reduction/parallel_reduction.cu).
+- [ ] CUDA Streams. See [here](https://github.com/NVIDIA-developer-blog/code-samples/blob/master/series/cuda-cpp/overlap-data-transfers/async.cu) and [here](https://leimao.github.io/blog/CUDA-Stream/) and [here](https://developer.nvidia.com/blog/how-overlap-data-transfers-cuda-cc/). 
 
 ### Analysis Programs
 - [x] [Program](src/device_info.cu) that extracts the properties of the attached CUDA device(s).
