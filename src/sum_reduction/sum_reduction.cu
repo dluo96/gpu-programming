@@ -120,14 +120,14 @@ int main() {
 
     // Kernel decomposition with recursion
     cudaEventRecord(start);
-    sum_reduction_v1<<<blocksPerGrid, threadsPerBlock, sizeSharedMemory>>>(d_input, d_result, N);
+    sum_reduction_v2<<<blocksPerGrid, threadsPerBlock, sizeSharedMemory>>>(d_input, d_result, N);
     cudaDeviceSynchronize();
     unsigned int numPartialSums = blocksPerGrid;
     while(numPartialSums > 1) {
         int nBlocks = (numPartialSums + threadsPerBlock - 1) / threadsPerBlock;
         // printf("Partial sums computed = %i. Threads per block = %i. Blocks required = %i.\n", 
         //         numPartialSums, threadsPerBlock, nBlocks);
-        sum_reduction_v1<<<nBlocks, threadsPerBlock, sizeSharedMemory>>>(d_result, d_result, numPartialSums);
+        sum_reduction_v2<<<nBlocks, threadsPerBlock, sizeSharedMemory>>>(d_result, d_result, numPartialSums);
         cudaDeviceSynchronize();
         numPartialSums = nBlocks;
     }
