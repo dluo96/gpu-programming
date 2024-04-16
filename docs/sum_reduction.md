@@ -51,7 +51,7 @@
 | Kernel      | Time Elapsed (ms) | Bandwidth (GB/s) | % of Theoretical Peak Bandwidth (320.064 GB/s) |
 |------------------|-----------------|-----------------------------|---------------------------------|
 | **Version 1:** interleaved addressing with divergent branching | 1.64               | 40.9                       | 12.8%                           |
-| **Version 2:** interleaved addressing with bank conflicts | ?               | ?                          | ?                               |
+| **Version 2:** interleaved addressing with bank conflicts | 1.24               | 54.0                          | 16.9%                               |
 
 
 ### Sum Reduction v1: Interleaved Addressing
@@ -61,3 +61,4 @@
 
 ### References
 - [Optimizing Parallel Reduction in CUDA (by Mark Harris)](https://developer.download.nvidia.com/assets/cuda/files/reduction.pdf)
+- [GPU Sum Reduction](https://github.com/mark-poscablo/gpu-sum-reduction/tree/master)

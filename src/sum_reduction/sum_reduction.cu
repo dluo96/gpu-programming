@@ -63,9 +63,17 @@ __global__ void sum_reduction_v2(int *g_input, int *g_output, int numElements) {
     // but threads being active/idle no longer depends on whether thread IDs
     // are powers of 2. Consecutive thread IDs now run, solving the issue of
     // threads diverging within a warp. 
-    // However, it introduces bank conflicts in shared memory: ...
+    // However, it introduces shared memory bank conflicts, which occur when
+    // multiple threads in a given warp access different address locations
+    // within the same bank. When this happens, the accesses serialize
+    // rather than happening in parallel, thus reducing throughput.
+    // Note: in NVIDIA GPUs, shared memory is divided into equally sized 
+    // memory modules called banks. For many architectures, shared memory has
+    // 32 banks, and each bank can service one memory request per clock cycle 
+    // without conflicts.
     for(unsigned int s = 1; s < blockDim.x; s *= 2) {
-        unsigned int updateIdx = 2 * s * ltid; // Index of element to update
+        // Index of element (in shared memory) to update
+        unsigned int updateIdx = 2 * s * ltid;
 
         if(updateIdx < blockDim.x) {
             sdata[updateIdx] += sdata[updateIdx + s];
