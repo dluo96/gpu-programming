@@ -17,7 +17,7 @@ This repository is a collection of notes and scripts I am compiling (no pun inte
 - [x] [1D convolution with constant memory](src/convolution/convolution_1d_constant_memory.cu).
 - [ ] 1D convolution with tiling.
 - [ ] 2D convolution.
-- [x] [Sum reduction](src/parallel_reduction/parallel_reduction.cu).
+- [x] [Sum reduction](src/sum_reduction/sum_reduction.cu).
 - [ ] CUDA Streams. See [here](https://github.com/NVIDIA-developer-blog/code-samples/blob/master/series/cuda-cpp/overlap-data-transfers/async.cu) and [here](https://leimao.github.io/blog/CUDA-Stream/) and [here](https://developer.nvidia.com/blog/how-overlap-data-transfers-cuda-cc/). 
 
 ### Analysis Programs

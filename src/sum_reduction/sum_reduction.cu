@@ -1,4 +1,4 @@
-// Parallel Reduction: 7 versions (implementations) 
+// Sum Reduction: 7 versions (implementations) 
 // with different optimization strategies
 
 #include <stdio.h>
@@ -105,7 +105,7 @@ int main() {
     cudaEventElapsedTime(&milliseconds, start, stop);
 
     cudaMemcpy(result, d_result, sizeof(int), cudaMemcpyDeviceToHost);
-    printf("Result of Parallel Reduction Version 1: %d\n", result[0]);
+    printf("Result of sum reduction v1: %d\n", result[0]);
     printf("Elapsed time: %f milliseconds\n", milliseconds);
     assert(result[0] == N);
 

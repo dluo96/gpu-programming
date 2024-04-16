@@ -1,11 +1,9 @@
-# Parallel Reduction
-- **Parallel reduction** is a common and important data parallel primitive. 
-    - For example, **sum reduction** adds up all the elements of an array. 
-- It is easy to implement naively in CUDA C/C++, but harder to implement.
-- It serves as a great optimization example: we will implement 7 versions, demonstrating 
-important optimization strategies along the way.  
-
-### Approach
+# Sum Reduction
+- **Sum reduction** is a special case of **parallel reduction**, which is a common and important data parallel primitive. 
+- Sum reduction adds up all the elements of an array. 
+    - While it is easy to implement naively in CUDA C/C++, it is harder to implement optimally.
+    - It serves as a great optimization example: we will implement 7 versions, demonstrating 
+    important optimization strategies along the way.
 - Can parallelise the reduction by letting each thread block reduce a portion of the array. 
     - A tree-based approach can be used within each thread block. 
     - Each thread block would compute a partial result. 
@@ -40,21 +38,23 @@ important optimization strategies along the way.
 
 ## Versions 1-7
 ### Bandwidth Comparison
-- We compared the bandwidth of the 7 parallel reduction implementations. 
+- We compared the bandwidth of the 7 sum reduction implementations. 
 - All of the experiments were run with the following assumptions:
-    - Tesla T4
-    - Thread block size of 128
-    - `N=2^24` elements
+    - Tesla T4 GPU,
+    - Thread block size of 128,
+    - `N=2^24` elements.
 - Note that:
     - "Time elapsed" refers to the duration of the kernels. 
     - Bandwidth is calculated according to: `Bandwidth (in GB/s) = Total Data Size (in GB) / Time (s)`. 
+- The table below summarises the experiments, reporting each number to 3 significant figures. 
 
-| Kernel      | Time elapsed (ms) | Bandwidth (GB/s) |
-|------------------|-----------------|-----------------------------|
-| Version 1: interleaved addressing with divergent branching | 0.044               | 6.0                       |
-| Version 2: interleaved addressing with bank conflicts | ?               | ?                      |
+| Kernel      | Time Elapsed (ms) | Bandwidth (GB/s) | % of Theoretical Peak Bandwidth (320.064 GB/s) |
+|------------------|-----------------|-----------------------------|---------------------------------|
+| **Version 1:** interleaved addressing with divergent branching | 1.64               | 40.9                       | 12.8%                           |
+| **Version 2:** interleaved addressing with bank conflicts | ?               | ?                          | ?                               |
 
-### Parallel Reduction v1: Interleaved Addressing
+
+### Sum Reduction v1: Interleaved Addressing
 - See full implementation [here](../src/parallel_reduction_diverged.cu)
 
 
