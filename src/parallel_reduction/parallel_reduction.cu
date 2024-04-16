@@ -64,7 +64,7 @@ void init_vector(int *a, int N) {
 }
 
 int main() {
-    int N = 1 << 22;
+    int N = 1 << 24;
     size_t bytes = N * sizeof(int);
 
     int *input, *result;
@@ -94,8 +94,8 @@ int main() {
     unsigned int numPartialSums = blocksPerGrid;
     while(numPartialSums > 1) {
         int nBlocks = (numPartialSums + threadsPerBlock - 1) / threadsPerBlock;
-        printf("Partial sums computed = %i. Threads per block = %i. Blocks required = %i.\n", 
-                numPartialSums, threadsPerBlock, nBlocks);
+        // printf("Partial sums computed = %i. Threads per block = %i. Blocks required = %i.\n", 
+        //         numPartialSums, threadsPerBlock, nBlocks);
         sum_reduction_v1<<<nBlocks, threadsPerBlock, sizeSharedMemory>>>(d_result, d_result, numPartialSums);
         cudaDeviceSynchronize();
         numPartialSums = nBlocks;
