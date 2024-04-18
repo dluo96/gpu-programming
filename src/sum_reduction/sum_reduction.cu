@@ -7,8 +7,8 @@
 #include <cuda_runtime.h>
 
 // Kernel v1: Interleaved Addressing with Divergent Branches.
-// Drawbacks: highly divergent warps are inefficient and the 
-// modulo (%) operator is slow. 
+// Disadvantages: thread divergence within warps are inefficient 
+// and the modulo (%) operator is slow. 
 __global__ void sum_reduction_v1(int *g_input, int *g_output, int numElements) {
     // Allocate dynamic shared memory
     extern __shared__ unsigned int sdata[];
@@ -43,7 +43,7 @@ __global__ void sum_reduction_v1(int *g_input, int *g_output, int numElements) {
     }
 }
 
-// Version 2: Interleaved Addressing with Bank Conflicts.
+// Kernel version 2: Interleaved Addressing with Bank Conflicts.
 // Compared to Version 1, this kernel replaces the divergent
 // branch in the inner loop with a strided index and non-divergent 
 // branch. This leads to a new drawback: shared memory bank conflicts. 
@@ -87,14 +87,107 @@ __global__ void sum_reduction_v2(int *g_input, int *g_output, int numElements) {
     }
 }
 
-// Version 3: Sequential Addressing.
-// Compared to Version 2, this kernel replaces the
-// strided indexing in the inner loop with a reversed
-// loop and thread-ID-based indexing.
-// Advantages: sequential addressing is conflict free.
-// Disadvantages: half of the threads are idle on the 
-// first loop of the iteration. 
+// Kernel version 3: Sequential Addressing.
+// Compared to Version 2, this kernel replaces the strided indexing
+// in the inner loop with a reversed loop and thread-ID-based indexing.
+// Advantages: the above means sequential addressing is conflict free.
+// Disadvantages: half of the threads are idle on the 1st iteration, 
+// three quarters of the threads are idle on the 2nd iteration, etc. 
+__global__ void sum_reduction_v3(int *g_input, int *g_output, int numElements) {
+    extern __shared__ unsigned int sdata[];
+    unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int ltid = threadIdx.x;
 
+    if (tid < numElements) {
+        sdata[ltid] = g_input[tid];
+    } else {
+        sdata[ltid] = 0;
+    }
+    __syncthreads();
+
+    // Perform reduction in shared memory. 
+    // Sequential addressing solves the shared memory bank conflicts
+    // because the threads now access shared memory with a stride of
+    // one 32-bit word (unsigned int) now. 
+    for(unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
+        if(ltid < s) {
+            sdata[ltid] += sdata[ltid + s];
+        }
+        __syncthreads();
+    }
+
+    // Write result for this block from shared to global memory
+    if (ltid == 0) {
+        g_output[blockIdx.x] = sdata[0];
+    }
+}
+
+// Kernel version 4: First Sum During Load from Global Memory
+__global__ void sum_reduction_v4(int *g_input, int *g_output, int numElements) {
+    extern __shared__ unsigned int sdata[];
+
+    // Halve the number of thread blocks: instead of a single load,
+    // each thread loads 2 elements from global memory, sums them, and
+    // loads the result into shared memory.
+    unsigned int tid = blockIdx.x * (blockDim.x * 2) + threadIdx.x;
+    unsigned int ltid = threadIdx.x;
+    if (tid < numElements) {
+        // Do first sum during load
+        sdata[ltid] = g_input[tid] + g_input[tid + blockDim.x];
+    } else {
+        sdata[ltid] = 0;
+    }
+    __syncthreads();
+
+    // Same as version 3
+    for(unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
+        if(ltid < s) {
+            sdata[ltid] += sdata[ltid + s];
+        }
+        __syncthreads();
+    }
+
+    // Write result for this block from shared to global memory
+    if (ltid == 0) {
+        g_output[blockIdx.x] = sdata[0];
+    }
+}
+
+// Kernel version 5
+// TODO: fix with sum_reduction_v5.cu
+__global__ void sum_reduction_v5(int *g_input, int *g_output, int numElements) {
+    extern __shared__ unsigned int sdata[];
+    unsigned int tid = blockIdx.x * (blockDim.x * 2) + threadIdx.x;
+    unsigned int ltid = threadIdx.x;
+    if (tid < numElements) {
+        sdata[ltid] = g_input[tid] + g_input[tid + blockDim.x];
+    } else {
+        sdata[ltid] = 0;
+    }
+    __syncthreads();
+
+    for(unsigned int s = blockDim.x / 2; s > 32; s >>= 1) {
+        if(ltid < s) {
+            sdata[ltid] += sdata[ltid + s];
+        }
+        __syncthreads();
+    }
+
+    // Warp reduce
+    if(ltid < 32) {
+    	sdata[ltid] += sdata[ltid + 32];
+		sdata[ltid] += sdata[ltid + 16];
+		sdata[ltid] += sdata[ltid + 8];
+		sdata[ltid] += sdata[ltid + 4];
+		sdata[ltid] += sdata[ltid + 2];
+		sdata[ltid] += sdata[ltid + 1];
+    }
+
+    // Write result for this block from shared to global memory
+    if (ltid == 0) {
+        g_output[blockIdx.x] = sdata[0];
+    }
+}
 
 void init_vector(int *a, int N) {
     for (int i = 0; i < N; i++) {
@@ -128,14 +221,14 @@ int main() {
 
     // Kernel decomposition with recursion
     cudaEventRecord(start);
-    sum_reduction_v2<<<blocksPerGrid, threadsPerBlock, sizeSharedMemory>>>(d_input, d_result, N);
+    sum_reduction_v4<<<blocksPerGrid/2, threadsPerBlock, sizeSharedMemory>>>(d_input, d_result, N);
     cudaDeviceSynchronize();
     unsigned int numPartialSums = blocksPerGrid;
     while(numPartialSums > 1) {
         int nBlocks = (numPartialSums + threadsPerBlock - 1) / threadsPerBlock;
         // printf("Partial sums computed = %i. Threads per block = %i. Blocks required = %i.\n", 
         //         numPartialSums, threadsPerBlock, nBlocks);
-        sum_reduction_v2<<<nBlocks, threadsPerBlock, sizeSharedMemory>>>(d_result, d_result, numPartialSums);
+        sum_reduction_v4<<<nBlocks/2, threadsPerBlock, sizeSharedMemory>>>(d_result, d_result, numPartialSums);
         cudaDeviceSynchronize();
         numPartialSums = nBlocks;
     }
@@ -144,9 +237,10 @@ int main() {
     cudaEventElapsedTime(&milliseconds, start, stop);
 
     cudaMemcpy(result, d_result, sizeof(int), cudaMemcpyDeviceToHost);
-    printf("Result of sum reduction v1: %d\n", result[0]);
-    printf("Elapsed time: %f milliseconds\n", milliseconds);
     assert(result[0] == N);
+    printf("Success! Computed sum reduction.\n");
+    printf("Result: %d\n", result[0]);
+    printf("Time elapsed: %f milliseconds\n", milliseconds);
 
     // Cleanup
     cudaFree(d_input);

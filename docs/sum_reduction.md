@@ -52,11 +52,8 @@
 |------------------|-----------------|-----------------------------|---------------------------------|
 | **Version 1:** interleaved addressing with divergent branching | 1.64               | 40.9                       | 12.8%                           |
 | **Version 2:** interleaved addressing with bank conflicts | 1.24               | 54.0                          | 16.9%                               |
-
-
-### Sum Reduction v1: Interleaved Addressing
-- See full implementation [here](../src/parallel_reduction_diverged.cu)
-
+| **Version 3:** sequential addressing | 0.94              | 71.4                          | 22.3%                               |
+| **Version 4:** sequential addressing with first addition during load into shared memory | 0.55            | 122                          | 38.1%                               |
 
 
 ### References
