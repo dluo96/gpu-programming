@@ -10,16 +10,21 @@
 #define SIZE 256
 #define SHMEM_SIZE 256 * 4
 
-// Callable from GPU, can be thought of as helper function for kernel.
-// `volatile` is specified to prevent caching in registers (a compiler optimization)
-// __syncthreads() is not necessary. 
-__device__ void warpReduce(volatile int* shmem_ptr, int t) {
-        shmem_ptr[t] += shmem_ptr[t + 32];
-        shmem_ptr[t] += shmem_ptr[t + 16];
-        shmem_ptr[t] += shmem_ptr[t + 8];
-        shmem_ptr[t] += shmem_ptr[t + 4];
-        shmem_ptr[t] += shmem_ptr[t + 2];
-        shmem_ptr[t] += shmem_ptr[t + 1];
+// This function is a callable from the GPU - it can be thought of as helper
+// function for the kernel. `volatile` is specified to prevent caching in 
+// registers (a compiler optimization).
+// Threads within a single warp execute in lockstep: all threads within the
+// warp execute the same instruction at the same time. Due to this synchronous
+// execution, this function, which involves shared memory where each thread 
+// reads and writes to its own distinct memory location, does not require
+// explicit synchronization mechanisms such as `__syncthreads()`. 
+__device__ void warpReduce(volatile int* sdata, int ltid) {
+        sdata[ltid] += sdata[ltid + 32]; // Executed in lockstep by all threads in the warp
+        sdata[ltid] += sdata[ltid + 16]; // Executed in lockstep by all threads in the warp
+        sdata[ltid] += sdata[ltid + 8]; // Executed in lockstep by all threads in the warp
+        sdata[ltid] += sdata[ltid + 4]; // Executed in lockstep by all threads in the warp
+        sdata[ltid] += sdata[ltid + 2]; // Executed in lockstep by all threads in the warp
+        sdata[ltid] += sdata[ltid + 1]; // Executed in lockstep by all threads in the warp
 }
 
 __global__ void sum_reduction(int *g_input, int *g_output, int len) {
