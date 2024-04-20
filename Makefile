@@ -34,6 +34,16 @@ convolution_1d_compare:
 sum_reduction:
 	nvcc src/sum_reduction/sum_reduction.cu -o sum_reduction -run
 
+sum_reduction_v5:
+	nvcc src/sum_reduction/sum_reduction_v5.cu -o sum_reduction_v5 -run
+
 clean:
-	rm device_info hello_world saxpy matmul matmul_cache_tiled convolution_1d convolution_1d_constant_memory sum_reduction
+	rm device_info \
+		hello_world \
+		saxpy matmul \
+		matmul_cache_tiled \
+		convolution_1d \
+		convolution_1d_constant_memory \
+		sum_reduction \
+		sum_reduction_v5
 	
