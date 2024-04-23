@@ -54,7 +54,7 @@
 | **Version 2:** interleaved addressing with shared memory bank conflicts | 1.24               | 54.0                          | 16.9%                               |
 | **Version 3:** sequential addressing | 0.94              | 71.4                          | 22.3%                               |
 | **Version 4:** sequential addressing where first addition happens during load into shared memory | 0.55            | 122                          | 38.1%                               |
-| **Version 5:** unrolling the last warp by utilising SIMD (special case of SIMT) | ?            | ?                          | ?                               |
+| **Version 5:** unrolling the last warp by utilising SIMD (special case of SIMT) | 0.47            | 142.8                          | 44.6%                               |
 
 ### Version 1: Interleaved Addressing with Warp Divergence
 If threads within a warp execute in lockstep i.e. same instruction at the same time, what happens when there is warp divergence?
