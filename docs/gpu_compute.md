@@ -90,7 +90,7 @@ The table below lists and defines the terms related to the different levels of p
 - **Single Instruction Multiple Threads (SIMT)** is closely related to the better known term **Single Instruction Multiple Data (SIMD)**. 
     - In SIMD, a single instruction acts on *all the data* in *exactly* the same way. 
     - In SIMT, this restriction is relaxed slightly: selected threads can be activated/deactivated, meaning that instructions and data are processed only on the active threads, while local data remain unchanged on inactive threads. 
-    - As a result, SIMT can perform **branching** (though not very efficiently): given an *if-else* starting with `if (condition)`, the threads for which `condition==true` will be active when running statements in the `if` clause, and equivalently for the threads for which `condition==false`. The result will be correct, but inactive threads will do no useful work while waiting for statements in the active clause to complete (see figure). 
+    - As a result, SIMT can perform **branching** (though not very efficiently): given an *if-else* starting with `if (condition)`, the threads for which `condition==true` will be active when running statements in the `if` clause, and equivalently for the threads for which `condition==false`. The result will be correct, but inactive threads will do no useful work while waiting for statements in the active clause to complete (see figure). This phenomenon of **warp divergence** will be explained further below.  
 
 <p align="center">
         <img src="../img/SIMT_Branching.png" width="600"/>
@@ -99,10 +99,16 @@ The table below lists and defines the terms related to the different levels of p
 - Note that SIMT also exists on CPUs, for example x86_64 has *masked variants* in which a vector instruction can be turned on/off for selected vector lanes according to the true/false values in an extra vector operand.
 
 - **Warp**: at runtime, a thread block is divided into **warps** for **SIMT** execution. 
-    - A warp consists of 32 threads with consecutive thread indexes. 
+    - A warp consists of 32 threads with consecutive thread indexes (e.g. `0, 1, ..., 31` or `32, 33, ..., 63`). 
     - The 32 threads in a warp are processed together by a set of 32 CUDA cores. This is analogous to the way that a vectorized loop on a CPU is chunked into vectors of a fixed size, then processed by a set of vector lanes.
-    - But why exactly 32? Because in NVIDIA's hardware, the CUDA cores are divided into fixed groups of 32. Breaking down a large block of threads into chunks of this size simplifies the SM's task of scheduling the entire thread block on its available resources.
-    - *One could argue that the existence of warps is a hardware detail that isn't directly relevant to application programmers. However, the warp-based execution model has implications for performance that can influence coding choices. For example—as the figure above illustrates—branching can complicate the execution flow of a warp, if two threads in the same warp branch to different instructions. Thus, a programmer might want to avoid branching within warp-sized sets of loop iterations.*
+    - **But why exactly 32?** Because in NVIDIA's hardware, the CUDA cores are divided into fixed groups of 32. Breaking down a large block of threads into chunks of this size simplifies the SM's task of scheduling the entire thread block on its available resources.
+    - Arguably, the existence of warps is a hardware detail not directly relevant to the programmer. However, the warp-based execution model has implications for performance that can influence code design (see the [sum reduction kernels](./sum_reduction.md) for an example). As the figure above illustrates, branching can slow down the execution of a warp, if two (or more) threads in the same warp branch into different instructions. 
+- **Warp divergence**: occurs in CUDA when threads within the same warp follow different execution paths due to conditional branches such as if-else statements (as allowed by SIMT).
+        - In CUDA, threads within the same warp execute in lockstep (same instruction at the same time). Thus, when warp divergence happens, the warp must **serialize the execution of each branch path**. In other words, the warp must process each unique path in sequence rather than in parallel. 
+        - This serialization leads to underutilization of the GPU's computing resources because while some threads are active, others are idle and must wait (see figure above). 
+        - Thus, warp divergence can significantly affect performance.
+        - For this reason, a programmer should avoid branching within warp-sized sets of loop iterations.
+        - Check out the [sum reduction kernels](./sum_reduction.md) to see the effect of warp divergence and how to prevent it. 
 
 
 ## Kernels and SMs
