@@ -50,10 +50,43 @@
 
 | Kernel      | Time Elapsed (ms) | Bandwidth (GB/s) | % of Theoretical Peak Bandwidth (320.064 GB/s) |
 |------------------|-----------------|-----------------------------|---------------------------------|
-| **Version 1:** interleaved addressing with divergent branching | 1.64               | 40.9                       | 12.8%                           |
-| **Version 2:** interleaved addressing with bank conflicts | 1.24               | 54.0                          | 16.9%                               |
+| **Version 1:** interleaved addressing with warp divergence (branching threads) | 1.64               | 40.9                       | 12.8%                           |
+| **Version 2:** interleaved addressing with shared memory bank conflicts | 1.24               | 54.0                          | 16.9%                               |
 | **Version 3:** sequential addressing | 0.94              | 71.4                          | 22.3%                               |
-| **Version 4:** sequential addressing with first addition during load into shared memory | 0.55            | 122                          | 38.1%                               |
+| **Version 4:** sequential addressing where first addition happens during load into shared memory | 0.55            | 122                          | 38.1%                               |
+| **Version 5:** unrolling the last warp by utilising SIMD (special case of SIMT) | ?            | ?                          | ?                               |
+
+### Version 1: Interleaved Addressing with Warp Divergence
+If threads within a warp execute in lockstep i.e. same instruction at the same time, what happens when there is warp divergence?
+
+
+
+### Version 5: Unrolling the Last Warp
+> 💡 CUDA guarantees that **threads within the same warp execute in lockstep**, i.e. each thread executes the same instruction at the same time.
+
+Consider the code snippet:
+```cpp
+__device__ void warpReduce(volatile int* sdata, int ltid) {
+        sdata[ltid] += sdata[ltid + 32];
+        sdata[ltid] += sdata[ltid + 16];
+        sdata[ltid] += sdata[ltid + 8];
+        sdata[ltid] += sdata[ltid + 4];
+        sdata[ltid] += sdata[ltid + 2];
+        sdata[ltid] += sdata[ltid + 1];
+}
+```
+**Question**: for (say) `sdata[0] += sdata[1]`, doesn't the value of `sdata[1]` depend on whether the thread that updates `sdata[1]` has executed?
+
+This question concerns a key aspect of CUDA programming related to how warp-level operations behave. Let us explore this to clarify how synchronization and execution order within a warp ensure data consistency.
+
+- **Warp Execution and Synchronization**:
+    - CUDA guarantees that threads within a single warp execute in lockstep, i.e. they execute the same instruction at the same time. 
+    - Due to this synchronous execution within warps, certain operations, especially those involving shared memory or registers where each thread reads and writes to its own distinct memory location, do not require explicit synchronization mechanisms like `__syncthreads()`.
+- **Reduction Operation**:
+    - In `warpReduce`, the reduction process is designed such that each thread adds a value from another thread within the same warp. Here’s how synchronization implicitly happens:
+    - The key to the correctness of this approach lies in the reduction steps being carried out in an order that respects data dependencies. Before you can do `sdata[0] += sdata[1]`, the values at `sdata[1]`, `sdata[2]`, and so on, must already be updated in previous steps (like `sdata[1] += sdata[17]`, `sdata[1] += sdata[9]`, `sdata[1] += sdata[5]`, `sdata[1] += sdata[3]`, and `sdata[1] += sdata[2]`). Each step reduces the range of active threads, but all threads perform their updates simultaneously.
+    - This lockstep execution means that when a thread performs `sdata[0] += sdata[1]`, the value in `sdata[1]` has already been finalized by its own set of additions, which were part of the same instruction across the warp. Thus, there is no need for synchronization like `__syncthreads()` within these steps because there is no chance that `sdata[1]` is being updated at the same time that it is being read by another thread in the warp.
+    - The absence of memory conflicts and the guarantee that each thread reads and writes its own unique memory location before moving on means each step is safe from race conditions within the warp.
 
 
 ### References
