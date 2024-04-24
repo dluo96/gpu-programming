@@ -54,7 +54,7 @@
 | **Version 2:** interleaved addressing with shared memory bank conflicts | 1.24               | 54.0                          | 16.9%                               |
 | **Version 3:** sequential addressing | 0.94              | 71.4                          | 22.3%                               |
 | **Version 4:** sequential addressing where first addition happens during load into shared memory | 0.55            | 122                          | 38.1%                               |
-| **Version 5:** unrolling the last warp by utilising SIMD (special case of SIMT) | 0.47            | 142.8                          | 44.6%                               |
+| **Version 5:** unrolling the last warp by utilising SIMD (special case of SIMT) | 0.35            | 191.7                          | 59.9%                               |
 
 ### Version 1: Interleaved Addressing with Warp Divergence
 If threads within a warp execute in lockstep i.e. same instruction at the same time, what happens when there is warp divergence?
@@ -88,7 +88,15 @@ This question concerns a key aspect of CUDA programming related to how warp-leve
     - This lockstep execution means that when a thread performs `sdata[0] += sdata[1]`, the value in `sdata[1]` has already been finalized by its own set of additions, which were part of the same instruction across the warp. Thus, there is no need for synchronization like `__syncthreads()` within these steps because there is no chance that `sdata[1]` is being updated at the same time that it is being read by another thread in the warp.
     - The absence of memory conflicts and the guarantee that each thread reads and writes its own unique memory location before moving on means each step is safe from race conditions within the warp.
 
+### Version 6: Cooperative Groups
+- **Thread Group**: the fundamental type in Cooperative Groups is `thread_group`, which is a **handle** to a **group of threads**. 
+    - `size()` returns the total number of threads comprising the group.
+    - `thread_rank()` returns the index (between `0` and `size()-1`) of the calling thread within a group.
+    - `is_valid` checks the validity of a group. 
+- **Thread Group Collective Operations**
+    - You can synchronize a group by calling its *collective* `sync()` method or using `cooperative_groups::sync()`. 
 
 ### References
 - [Optimizing Parallel Reduction in CUDA (by Mark Harris)](https://developer.download.nvidia.com/assets/cuda/files/reduction.pdf)
 - [GPU Sum Reduction](https://github.com/mark-poscablo/gpu-sum-reduction/tree/master)
+- [Cooperative Groups: Flexible CUDA Thread Programming](https://developer.nvidia.com/blog/cooperative-groups/)
