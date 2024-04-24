@@ -156,42 +156,6 @@ __global__ void sum_reduction_v4(int *g_input, int *g_output, int numElements) {
     }
 }
 
-// Kernel version 5
-// TODO: fix with sum_reduction_v5.cu
-__global__ void sum_reduction_v5(int *g_input, int *g_output, int numElements) {
-    extern __shared__ unsigned int sdata[];
-    unsigned int tid = blockIdx.x * (blockDim.x * 2) + threadIdx.x;
-    unsigned int ltid = threadIdx.x;
-    if (tid < numElements) {
-        sdata[ltid] = g_input[tid] + g_input[tid + blockDim.x];
-    } else {
-        sdata[ltid] = 0;
-    }
-    __syncthreads();
-
-    for(unsigned int s = blockDim.x / 2; s > 32; s >>= 1) {
-        if(ltid < s) {
-            sdata[ltid] += sdata[ltid + s];
-        }
-        __syncthreads();
-    }
-
-    // Warp reduce
-    if(ltid < 32) {
-    	sdata[ltid] += sdata[ltid + 32];
-		sdata[ltid] += sdata[ltid + 16];
-		sdata[ltid] += sdata[ltid + 8];
-		sdata[ltid] += sdata[ltid + 4];
-		sdata[ltid] += sdata[ltid + 2];
-		sdata[ltid] += sdata[ltid + 1];
-    }
-
-    // Write result for this block from shared to global memory
-    if (ltid == 0) {
-        g_output[blockIdx.x] = sdata[0];
-    }
-}
-
 void init_vector(int *a, int N) {
     for (int i = 0; i < N; i++) {
         a[i] = 1;  // Initializing with 1 for simplicity
@@ -224,12 +188,12 @@ int main() {
 
     // Kernel decomposition with recursion
     cudaEventRecord(start);
-    sum_reduction_v4<<<gridSize, blockSize>>>(d_input, d_result, N);
+    sum_reduction_v5<<<gridSize, blockSize>>>(d_input, d_result, N);
 
     unsigned int numRemain = gridSize;
     while(numRemain > 1) {
         gridSize = (numRemain/2 + blockSize - 1) / blockSize;
-        sum_reduction_v4<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+        sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
         numRemain = gridSize;
     }
     cudaEventRecord(stop);
