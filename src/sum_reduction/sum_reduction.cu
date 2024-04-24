@@ -6,6 +6,9 @@
 #include <assert.h>
 #include <cuda_runtime.h>
 
+#define SIZE 128
+#define SHMEM_SIZE 128 * 4
+
 // Kernel v1: Interleaved Addressing with Divergent Branches.
 // Disadvantages: thread divergence within warps are inefficient 
 // and the modulo (%) operator is slow. 
@@ -124,7 +127,7 @@ __global__ void sum_reduction_v3(int *g_input, int *g_output, int numElements) {
 
 // Kernel version 4: First Sum During Load from Global Memory
 __global__ void sum_reduction_v4(int *g_input, int *g_output, int numElements) {
-    extern __shared__ unsigned int sdata[];
+    __shared__ unsigned int sdata[SHMEM_SIZE];
 
     // Halve the number of thread blocks: instead of a single load,
     // each thread loads 2 elements from global memory, sums them, and
@@ -209,9 +212,9 @@ int main() {
     cudaMemcpy(d_input, input, bytes, cudaMemcpyHostToDevice);
 
     // Threads, blocks, grids, and dynamic shared memory
-    int threadsPerBlock = 128;
-    int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
-    int sizeSharedMemory = threadsPerBlock * sizeof(int);
+    int blockSize = SIZE;
+    int gridSize = (N/2 + blockSize - 1) / blockSize;
+    // int shmemSize = blockSize * sizeof(int);
 
     // CUDA events for timing kernels
     cudaEvent_t start, stop;
@@ -221,22 +224,19 @@ int main() {
 
     // Kernel decomposition with recursion
     cudaEventRecord(start);
-    sum_reduction_v4<<<blocksPerGrid/2, threadsPerBlock, sizeSharedMemory>>>(d_input, d_result, N);
-    cudaDeviceSynchronize();
-    unsigned int numPartialSums = blocksPerGrid;
-    while(numPartialSums > 1) {
-        int nBlocks = (numPartialSums + threadsPerBlock - 1) / threadsPerBlock;
-        // printf("Partial sums computed = %i. Threads per block = %i. Blocks required = %i.\n", 
-        //         numPartialSums, threadsPerBlock, nBlocks);
-        sum_reduction_v4<<<nBlocks/2, threadsPerBlock, sizeSharedMemory>>>(d_result, d_result, numPartialSums);
-        cudaDeviceSynchronize();
-        numPartialSums = nBlocks;
+    sum_reduction_v4<<<gridSize, blockSize>>>(d_input, d_result, N);
+
+    unsigned int numRemain = gridSize;
+    while(numRemain > 1) {
+        gridSize = (numRemain/2 + blockSize - 1) / blockSize;
+        sum_reduction_v4<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+        numRemain = gridSize;
     }
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
     cudaEventElapsedTime(&milliseconds, start, stop);
 
-    cudaMemcpy(result, d_result, sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(result, d_result, bytes, cudaMemcpyDeviceToHost);
     assert(result[0] == N);
     printf("Success! Computed sum reduction.\n");
     printf("Result: %d\n", result[0]);
