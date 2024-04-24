@@ -47,10 +47,10 @@ __device__ int thread_sum(int *input, int n){
     for (int i = tid; i < n / 4; i += blockDim.x * gridDim.x) {
         // With `int4`, we effectively read a block of four consecutive
         // integers from the array, starting at index 4*i. In particular, 
-        //      in.x input[4*i] in.x
-        //      input[4*i + 1] as in.y
-        //      input[4*i + 2] as in.z
-        //      input[4*i + 3] as in.w
+        //      input[4*i]     gives in.x
+        //      input[4*i + 1] gives in.y
+        //      input[4*i + 2] gives in.z
+        //      input[4*i + 3] gives in.w
         // Using `int4` allows loading and adding four integers at a time,
         // improving memory throughput.
         int4 in = ((int4*)input)[i];
