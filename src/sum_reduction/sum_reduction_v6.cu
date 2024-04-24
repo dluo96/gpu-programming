@@ -15,10 +15,10 @@
 #include <math.h>
 #include <iostream>
 
-using namespace cooperative_groups;
+namespace cg = cooperative_groups;
 
 // Reduces a thread group to a single element
-__device__ int reduce_sum(thread_group g, int *temp, int val){
+__device__ int reduce_sum(cg::thread_group g, int *temp, int val){
     int lane = g.thread_rank();
 
     // Each thread adds its partial sum[i] to sum[lane+i]
@@ -26,13 +26,11 @@ __device__ int reduce_sum(thread_group g, int *temp, int val){
         temp[lane] = val;
         // Wait for all threads to store
         g.sync();
-        if (lane < i) {
-                val += temp[lane + i];
-        }
+        if (lane < i) { val += temp[lane + i]; }
         // Wait for all threads to load
         g.sync();
     }
-    // note: only thread 0 will return full sum
+    // Note: only thread 0 will return full sum
     return val; 
 }
 
@@ -56,13 +54,16 @@ __global__ void sum_reduction(int *sum, int *input, int n){
     // Dynamic shared memory allocation
     extern __shared__ int temp[];
 
-    // Identifier for a TB
-    auto g = this_thread_block();
+    // Identifier for a block
+    auto g = cg::this_thread_block();
 
-    // Reudce each TB
+    // Reudce each block
     int block_sum = reduce_sum(g, temp, my_sum);
 
-    // Collect the partial result from each TB
+    // Collect the partial result from each block.
+    // Here `atomicAdd()` reads a word at an address 
+    // in shared memory, adds a number to it, and
+    // writes the result back to the same address.
     if (g.thread_rank() == 0) {
             atomicAdd(sum, block_sum);
     }
@@ -85,18 +86,33 @@ int main() {
 
     init_vector(input, N);
 
-    // Blocks, grid, and size of dynamic shared memory
+    // Sizes of blocks, grid, and dynamic shared memory
     int blockSize = 128;
     int gridSize = (N + blockSize - 1) / blockSize;
     size_t shmemSize = blockSize * sizeof(int);
 
+    // CUDA events for timing kernels
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    float milliseconds = 0;
+
     // Call kernel with dynamic shared memory
+    cudaEventRecord(start);
     sum_reduction<<<gridSize, blockSize, shmemSize>>>(sum, input, N);
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&milliseconds, start, stop);
     cudaDeviceSynchronize();
 
     printf("Result is %d \n", sum[0]);
     assert(*sum == N);
     printf("Success! Computed sum reduction.\n");
+    printf("Time elapsed: %f milliseconds\n", milliseconds);
+
+    // Cleanup
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
 
     return 0;
 }
