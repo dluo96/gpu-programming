@@ -1,4 +1,4 @@
-// Sum Reduction: 7 versions (implementations) 
+// Different implementations of sum reduction
 // with different optimization strategies
 
 #include <stdio.h>
