@@ -38,9 +38,21 @@ __device__ int reduce_sum(cg::thread_group g, int *temp, int val){
 __device__ int thread_sum(int *input, int n){
     int sum = 0;
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    for (int i = tid; i < n / 4; i += blockDim.x * gridDim.x){
-        // Using `int4` allows loading and adding four integers
-        // at a time, improving memory throughput
+
+    // For the thread in question, loop over the elements in the
+    // array that this thread is responsible for adding. Each 
+    // iteration of the loop skips ahead by the total number of
+    // threads in the grid. The n/4 comes from the fact that each
+    // thread handles 4 elements at a time per loop iteration. 
+    for (int i = tid; i < n / 4; i += blockDim.x * gridDim.x) {
+        // With `int4`, we effectively read a block of four consecutive
+        // integers from the array, starting at index 4*i. In particular, 
+        //      in.x input[4*i] in.x
+        //      input[4*i + 1] as in.y
+        //      input[4*i + 2] as in.z
+        //      input[4*i + 3] as in.w
+        // Using `int4` allows loading and adding four integers at a time,
+        // improving memory throughput.
         int4 in = ((int4*)input)[i];
         sum += in.x + in.y + in.z + in.w;
     }
