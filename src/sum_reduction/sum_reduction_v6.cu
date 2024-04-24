@@ -68,7 +68,7 @@ __global__ void sum_reduction(int *sum, int *input, int n){
     }
 }
 
-void initialize_vector(int *v, int n) {
+void init_vector(int *v, int n) {
     for (int i = 0; i < n; i++) {
         v[i] = 1; //rand() % 10;
     }
@@ -83,7 +83,7 @@ int main() {
     cudaMallocManaged(&sum, sizeof(int));
     cudaMallocManaged(&input, bytes);
 
-    initialize_vector(input, N);
+    init_vector(input, N);
 
     // Blocks, grid, and size of dynamic shared memory
     int blockSize = 128;
