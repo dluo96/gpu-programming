@@ -7,8 +7,8 @@
 #include <assert.h>
 #include <math.h>
 
-#define SIZE 256
-#define SHMEM_SIZE 256 * 4
+#define SIZE 128
+#define SHMEM_SIZE 128 * 4
 
 // This function is a callable from the GPU - it can be thought of as helper
 // function for the kernel. `volatile` is specified to prevent caching in 
@@ -27,18 +27,18 @@ __device__ void warpReduce(volatile int* sdata, int ltid) {
         sdata[ltid] += sdata[ltid + 1]; // Executed in lockstep by all threads in the warp
 }
 
-__global__ void sum_reduction(int *g_input, int *g_output, int len) {
+__global__ void sum_reduction_v5(int *g_input, int *g_output, int numElements) {
         // Allocate shared memory
         __shared__ int sdata[SHMEM_SIZE];
 
-        int tid = blockIdx.x * (blockDim.x * 2) + threadIdx.x;
-        int ltid = threadIdx.x;
+        unsigned int tid = blockIdx.x * (blockDim.x * 2) + threadIdx.x;
+        unsigned int ltid = threadIdx.x;
 
         // Perform first addition during load from global to shared memory
-        if(tid < len) {
-                if(gridDim.x > 1) {
+        if(tid < numElements) {
+                if(tid + blockDim.x < numElements) {
                         sdata[ltid] = g_input[tid] + g_input[tid + blockDim.x];
-                } else { // If there is only one thread block
+                } else {
                         sdata[ltid] = g_input[tid]; 
                 }
         } else {
@@ -46,10 +46,8 @@ __global__ void sum_reduction(int *g_input, int *g_output, int len) {
         }
         __syncthreads();
 
-        // Start at 1/2 block stride and divide by two each iteration
-        // Stop early (call device function instead)
-        for (int s = blockDim.x / 2; s > 32; s >>= 1) {
-                // Each thread does work unless it is further than the stride
+        // Stop early since `warpReduce` will take care of the rest
+        for (unsigned int s = blockDim.x / 2; s > 32; s >>= 1) {
                 if (ltid < s) {
                         sdata[ltid] += sdata[ltid + s];
                 }
@@ -67,58 +65,73 @@ __global__ void sum_reduction(int *g_input, int *g_output, int len) {
         }
 }
 
-void initialize_vector(int *v, int n) {
+void init_vector(int *v, int n) {
         for (int i = 0; i < n; i++) {
                 v[i] = 1;
         }
 }
 
 int main() {
-        int n = 1 << 28;
-        size_t bytes = n * sizeof(int);
+        int N = 1 << 24;
+        size_t bytes = N * sizeof(int);
 
-        int *h_v, *h_v_r;
-        int *d_v, *d_v_r;
+        int *input, *result;
+        int *d_input, *d_result;
 
-        // Allocate memory
-        h_v = (int*)malloc(bytes);
-        h_v_r = (int*)malloc(bytes);
-        cudaMalloc(&d_v, bytes);
-        cudaMalloc(&d_v_r, bytes);
+        // Allocate CPU and GPU memory, initialise vector, and copy to device
+        input = (int*)malloc(bytes);
+        result = (int*)malloc(bytes);
+        cudaMalloc(&d_input, bytes);
+        cudaMalloc(&d_result, bytes);
+        init_vector(input, N);
+        cudaMemcpy(d_input, input, bytes, cudaMemcpyHostToDevice);
 
-        // Initialize vector
-        initialize_vector(h_v, n);
+        // Set size of block (in number of threads) and
+        // size of grid (in number of blocks)
+        int blockSize = SIZE;
+        int gridSize = (N/2 + blockSize - 1) / blockSize;
 
-        // Copy to device
-        cudaMemcpy(d_v, h_v, bytes, cudaMemcpyHostToDevice);
+        // CUDA events for timing kernels
+        cudaEvent_t start, stop;
+        cudaEventCreate(&start);
+        cudaEventCreate(&stop);
+        float milliseconds = 0;
 
-        // TB Size
-        int TB_SIZE = SIZE;
+        // Perform first kernel call
+        cudaEventRecord(start);
+        sum_reduction_v5<<<gridSize, blockSize>>>(d_input, d_result, N);
 
-        // First time
-        int GRID_SIZE = (n/2 + TB_SIZE - 1) / TB_SIZE;
-
-        printf("Elements remaining: %i.\n", n);
-        sum_reduction << <GRID_SIZE, TB_SIZE >> > (d_v, d_v_r, n);
-        printf("Kernel launched with %i blocks\n", GRID_SIZE);
-
-        int numRemain = GRID_SIZE;
+        // Track how many partial results are left to be added and perform kernel 
+        // decomposition with recursion.
+        // Note: although CUDA kernel launches are asynchronous, all GPU-related tasks
+        // placed in one stream (the default behavior) are executed sequentially. 
+        // Hence there is no need for `cudaDeviceSynchronize` between kernel calls here.
+        unsigned int numRemain = gridSize;
         while(numRemain > 1) {
-                int GRID_SIZE = (numRemain/2 + TB_SIZE - 1) / TB_SIZE;
-                printf("Elements remaining: %i.\n", numRemain);
-                sum_reduction << <GRID_SIZE, TB_SIZE >> > (d_v_r, d_v_r, numRemain);
-                printf("Blocks launched: %i\n", GRID_SIZE);
-                cudaDeviceSynchronize();
-                numRemain = GRID_SIZE;
+                gridSize = (numRemain/2 + blockSize - 1) / blockSize;
+                sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                numRemain = gridSize;
         }
+        cudaEventRecord(stop);
+        cudaEventSynchronize(stop);
+        cudaEventElapsedTime(&milliseconds, start, stop);
 
-        // Copy to host;
-        cudaMemcpy(h_v_r, d_v_r, bytes, cudaMemcpyDeviceToHost);
+        // Copy to host
+        cudaMemcpy(result, d_result, bytes, cudaMemcpyDeviceToHost);
 
-        // Print the result
-        printf("Result: %d \n", h_v_r[0]);
-        assert(h_v_r[0] == n);
-        printf("Success! Completed sum reduction.\n");
+        // Check result
+        printf("Result: %d \n", result[0]);
+        assert(result[0] == N);
+        printf("Success! Computed sum reduction.\n");
+        printf("Time elapsed: %f milliseconds\n", milliseconds);
+
+        // Cleanup
+        cudaFree(d_input);
+        cudaFree(d_result);
+        free(input);
+        free(result);
+        cudaEventDestroy(start);
+        cudaEventDestroy(stop);
 
         return 0;
 }
