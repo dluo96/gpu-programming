@@ -1,10 +1,10 @@
-// Cooperative Groups extends the CUDA programming model 
-// to provide flexible, dynamic grouping of threads.
-// 
-// With GPU-wide sync (and not just block-wide sync with
-// __syncthreads) we no longer need kernel decomposition. 
-
 // Kernel version 6: sum reduction using Cooperative Groups.
+//  
+// CUDA 9 introduced Cooperative Groups which extends the
+// CUDA programming model to provide flexible, dynamic 
+// grouping of threads. With GPU-wide sync (and not just
+// block-wide sync with __syncthreads), we no longer need
+// kernel decomposition. 
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
