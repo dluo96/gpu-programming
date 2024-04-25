@@ -17,25 +17,39 @@
 
 namespace cg = cooperative_groups;
 
-// Reduces a thread group to a single element
-__device__ int reduce_sum(cg::thread_group g, int *temp, int val){
+// Reduces a thread group to a single element.
+// In particular, it performs an in-place reduction of values stored
+// in shared memory.
+__device__ int reduce_sum(cg::thread_group g, int *sdata, int val) {
+    // Identify the thread within the group
     int lane = g.thread_rank();
 
-    // Each thread adds its partial sum[i] to sum[lane+i]
-    for (int i = g.size() / 2; i > 0; i /= 2){
-        temp[lane] = val;
-        // Wait for all threads to store
+    // The iteratively loop halves the number of threads active in summing
+    // pairs of elements stored in shared memory, where each active thread 
+    // adds a value from an idle thread located a stride (decreasing with
+    // each iteration). This reduces the array to a single summed value.
+    // Note: this is similar to the sequential addressing in version 3 of
+    // the sum reduction kernel.
+    for(int i = g.size() / 2; i > 0; i /= 2) {
+        // Write to shared memory and ensure all threads have finished
+        // before proceeding
+        sdata[lane] = val;
         g.sync();
-        if (lane < i) { val += temp[lane + i]; }
-        // Wait for all threads to load
+
+        // Conditionally add a value from a partner thread at a specific
+        // stride and ensure all threads have finished before proceeding
+        if (lane < i) {
+            val += sdata[lane + i];
+        }
         g.sync();
     }
     // Note: only thread 0 will return full sum
     return val; 
 }
 
-// Creates partials sums from the original array
-__device__ int thread_sum(int *input, int n){
+// Each thread computes a partial sum (4 elements at a time)
+// from a subset of elements in the input array.
+__device__ int thread_sum(int *input, int N) {
     int sum = 0;
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -44,7 +58,7 @@ __device__ int thread_sum(int *input, int n){
     // iteration of the loop skips ahead by the total number of
     // threads in the grid. The n/4 comes from the fact that each
     // thread handles 4 elements at a time per loop iteration. 
-    for (int i = tid; i < n / 4; i += blockDim.x * gridDim.x) {
+    for (int i = tid; i < N / 4; i += blockDim.x * gridDim.x) {
         // With `int4`, we effectively read a block of four consecutive
         // integers from the array, starting at index 4*i. In particular, 
         //      input[4*i]     gives in.x
@@ -59,20 +73,21 @@ __device__ int thread_sum(int *input, int n){
     return sum;
 }
 
-__global__ void sum_reduction(int *sum, int *input, int n){
-    // Create partial sums from the array
-    int my_sum = thread_sum(input, n);
+__global__ void sum_reduction(int *sum, int *input, int N) {
+    // Each thread computes a partial sum
+    int my_sum = thread_sum(input, N);
 
     // Dynamic shared memory allocation
-    extern __shared__ int temp[];
+    extern __shared__ int sdata[];
 
-    // Identifier for a block
+    // In this case, a thread group is a thread block
     auto g = cg::this_thread_block();
 
-    // Reudce each block
-    int block_sum = reduce_sum(g, temp, my_sum);
+    // Each block adds the partial sum computed by each of 
+    // its threads. This returns another partial sum.
+    int block_sum = reduce_sum(g, sdata, my_sum);
 
-    // Collect the partial result from each block.
+    // Add the partial sum from each block.
     // Here `atomicAdd()` reads a word at an address 
     // in shared memory, adds a number to it, and
     // writes the result back to the same address.
@@ -92,16 +107,21 @@ int main() {
     size_t bytes = N * sizeof(int);
     int *sum, *input;
 
-    // Allocate using unified memory
+    // Allocation in unified memory
     cudaMallocManaged(&sum, sizeof(int));
     cudaMallocManaged(&input, bytes);
 
+    // Populate the array
     init_vector(input, N);
 
     // Sizes of blocks, grid, and dynamic shared memory
+    // With the grid size specified, each thread would
+    // process exactly one `int4` (see `thread_sum` above).
+    // To handle multiple, we could decrease the grid size.
     int blockSize = 128;
-    int gridSize = (N + blockSize - 1) / blockSize;
-    size_t shmemSize = blockSize * sizeof(int);
+    int quadrupletsPerThread = 2; // Number of `int4` processed per thread
+    int gridSize = (N/(4 * quadrupletsPerThread) + blockSize - 1) / blockSize;
+    size_t sharedBytes = blockSize * sizeof(int);
 
     // CUDA events for timing kernels
     cudaEvent_t start, stop;
@@ -111,7 +131,7 @@ int main() {
 
     // Call kernel with dynamic shared memory
     cudaEventRecord(start);
-    sum_reduction<<<gridSize, blockSize, shmemSize>>>(sum, input, N);
+    sum_reduction<<<gridSize, blockSize, sharedBytes>>>(sum, input, N);
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
     cudaEventElapsedTime(&milliseconds, start, stop);
