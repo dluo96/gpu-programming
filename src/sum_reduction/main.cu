@@ -55,7 +55,7 @@ int main() {
     cudaEventRecord(start);
     switch (version) {
         case 1:
-            gridSize = (N/2 + blockSize - 1) / blockSize;
+            gridSize = (N + blockSize - 1) / blockSize;
             sum_reduction_v1<<<gridSize, blockSize>>>(d_input, d_result, N); 
             break;
         case 2:
