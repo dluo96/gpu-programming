@@ -125,7 +125,7 @@ __global__ void sum_reduction_v3(int *g_input, int *g_output, int numElements) {
 
 // Kernel version 4: First Sum During Load from Global Memory
 __global__ void sum_reduction_v4(int *g_input, int *g_output, int numElements) {
-    __shared__ unsigned int sdata[SHMEM_SIZE];
+    __shared__ unsigned int sdata[SHMEM_BYTES];
 
     // Halve the number of thread blocks: instead of a single load,
     // each thread loads 2 elements from global memory, sums them, and

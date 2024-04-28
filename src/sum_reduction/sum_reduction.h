@@ -4,8 +4,9 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-#define SIZE 128
-#define SHMEM_SIZE 128 * 4
+// Shared memory on GPU
+#define SHMEM_LEN 128
+#define SHMEM_BYTES (SHMEM_LEN * 4)
 
 __global__ void sum_reduction_v1(int *g_input, int *g_output, int numElements);
 __global__ void sum_reduction_v3(int *g_input, int *g_output, int numElements);
