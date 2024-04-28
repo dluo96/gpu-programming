@@ -7,9 +7,6 @@
 #include <cuda_runtime.h>
 #include "sum_reduction.h"
 
-// #define SIZE 128
-// #define SHMEM_SIZE 128 * 4
-
 // Kernel v1: Interleaved Addressing with Divergent Branches.
 // Disadvantages: thread divergence within warps are inefficient 
 // and the modulo (%) operator is slow. 
