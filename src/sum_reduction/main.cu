@@ -86,19 +86,19 @@ int main() {
         switch (version) {
             case 1:
                 gridSize = (numRemain + blockSize - 1) / blockSize;
-                sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                sum_reduction_v1<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
                 break;
             case 2:
                 gridSize = (numRemain + blockSize - 1) / blockSize;
-                sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                sum_reduction_v2<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
                 break;
             case 3:
                 gridSize = (numRemain + blockSize - 1) / blockSize;
-                sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                sum_reduction_v3<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
                 break;
             case 4:
                 gridSize = (numRemain/2 + blockSize - 1) / blockSize;
-                sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                sum_reduction_v4<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
                 break;
             case 5:
                 gridSize = (numRemain/2 + blockSize - 1) / blockSize;
