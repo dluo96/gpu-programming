@@ -32,7 +32,7 @@ convolution_1d_compare:
 	nvprof ./convolution_1d_constant_memory
 
 sum_reduction:
-	nvcc src/sum_reduction/sum_reduction.cu -o sum_reduction -run
+	nvcc src/sum_reduction/main.cu -o src/sum_reduction/main -run
 
 sum_reduction_v5:
 	nvcc src/sum_reduction/sum_reduction_v5.cu -o sum_reduction_v5 -run
