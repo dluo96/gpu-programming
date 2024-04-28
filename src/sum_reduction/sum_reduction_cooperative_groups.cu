@@ -102,7 +102,7 @@ void init_vector(int *v, int n) {
 }
 
 int main() {
-    printf("Computing sum using using Cooperative Groups...");
+    printf("Computing sum using using Cooperative Groups...\n");
 
     int N = 1 << 24;
     size_t bytes = N * sizeof(int);
@@ -141,7 +141,7 @@ int main() {
     // Check result
     printf("Result is %d \n", sum[0]);
     assert(*sum == N);
-    printf("Success! Time elapsed: %f milliseconds\n", milliseconds);
+    printf("Success! Time elapsed: %f milliseconds.\n", milliseconds);
 
     // Cleanup
     cudaEventDestroy(start);
