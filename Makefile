@@ -41,7 +41,7 @@ sum_reduction:
 		-run
 
 sum_reduction_cooperative_groups:
-	nvcc src/sum_reduction/sum_reduction_cooperative_groups \
+	nvcc src/sum_reduction/sum_reduction_cooperative_groups.cu \
 		 -o src/sum_reduction/sum_red_coop_groups \
 		 -run
 
