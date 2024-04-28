@@ -9,7 +9,9 @@ void init_vector(int *a, int N) {
 }
 
 int main() {
-    std::cout << "[1] Interleaved Addressing with Warp Divergence\n"
+    std::cout << std::endl;
+    std::cout << "Choose your kernel:"  
+                 "[1] Interleaved Addressing with Warp Divergence\n"
                  "[2] Interleaved Addressing with Shared Memory Bank Conflicts\n"
                  "[3] Sequential Addressing\n"
                  "[4] First Sum During Load from Global Memory\n"
@@ -49,8 +51,8 @@ int main() {
     cudaEventCreate(&stop);
     float milliseconds = 0;
 
-    // Kernel decomposition
-    int blockSize = SHMEM_LEN; // In number of threads
+    // First kernel call of kernel decomposition
+    int blockSize = SHMEM_LEN; // Number of threads per block
     int gridSize;
     cudaEventRecord(start);
     switch (version) {
@@ -76,8 +78,8 @@ int main() {
             break;
     }
 
-    // Track how many partial results are left to be added and perform kernel 
-    // decomposition with recursion.
+    // Kernel decomposition using recursion. We track how many partial results are
+    // remaining to be added.
     // Note: although CUDA kernel launches are asynchronous, all GPU-related tasks
     // placed in one stream (the default behavior) are executed sequentially. 
     // Hence there is no need for `cudaDeviceSynchronize` between kernel calls here.
