@@ -46,7 +46,7 @@ __global__ void sum_reduction_v1(int *g_input, int *g_output, int numElements) {
     }
 }
 
-// Kernel version 2: Interleaved Addressing with Bank Conflicts.
+// Kernel v2: Interleaved Addressing with Bank Conflicts.
 // Compared to Version 1, this kernel replaces the divergent
 // branch in the inner loop with a strided index and non-divergent 
 // branch. This leads to a new drawback: shared memory bank conflicts. 
@@ -90,7 +90,7 @@ __global__ void sum_reduction_v2(int *g_input, int *g_output, int numElements) {
     }
 }
 
-// Kernel version 3: Sequential Addressing.
+// Kernel v3: Sequential Addressing.
 // Compared to Version 2, this kernel replaces the strided indexing
 // in the inner loop with a reversed loop and thread-ID-based indexing.
 // Advantages: the above means sequential addressing is conflict free.
@@ -125,7 +125,7 @@ __global__ void sum_reduction_v3(int *g_input, int *g_output, int numElements) {
     }
 }
 
-// Kernel version 4: First Sum During Load from Global Memory
+// Kernel v4: First Sum During Load from Global Memory
 __global__ void sum_reduction_v4(int *g_input, int *g_output, int numElements) {
     __shared__ unsigned int sdata[SHMEM_BYTES];
 
@@ -156,7 +156,7 @@ __global__ void sum_reduction_v4(int *g_input, int *g_output, int numElements) {
     }
 }
 
-// Version 5: unrolling last warp.
+// Kernel v5: unrolling the last warp using SIMD execution.
 // This function is a callable from the GPU - it can be thought of as helper
 // function for the kernel. `volatile` is specified to prevent caching in 
 // registers (a compiler optimization).
