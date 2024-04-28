@@ -68,6 +68,7 @@ nvcc src/matmul.cu -o matmul -run
 - [Cornell Virtual Workshop: Memory Types](https://cvw.cac.cornell.edu/gpu-architecture/gpu-memory/memory_types)
 - [An Easy Introduction to CUDA C and C++](https://developer.nvidia.com/blog/easy-introduction-cuda-c-and-c/)
 - [Introduction to GPU programming with CUDA (C/C++)](https://ulhpc-tutorials.readthedocs.io/en/latest/cuda/)
+- [CUDA – Dimensions, Mapping and Indexing](http://thebeardsage.com/cuda-dimensions-mapping-and-indexing/)
+- [CUDA Crash Course by CoffeeBeforeArch](https://www.youtube.com/playlist?list=PLxNPSjHT5qvtYRVdNN1yDcdSl39uHV_sU)
 - [From Scratch: Matrix Multiplication in CUDA](https://www.youtube.com/watch?v=DpEgZe2bbU0)
 - [From Scratch: Cache Tiled Matrix Multiplication in CUDA](https://www.youtube.com/watch?v=ga2ML1uGr5o)
-- [CUDA – Dimensions, Mapping and Indexing](http://thebeardsage.com/cuda-dimensions-mapping-and-indexing/)
