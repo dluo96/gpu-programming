@@ -9,14 +9,13 @@ void init_vector(int *a, int N) {
 }
 
 int main() {
-    std::cout << std::endl;
-    std::cout << "Choose your kernel:"  
+    std::cout << std::endl << "Choose your kernel: \n"  
                  "[1] Interleaved Addressing with Warp Divergence\n"
                  "[2] Interleaved Addressing with Shared Memory Bank Conflicts\n"
                  "[3] Sequential Addressing\n"
                  "[4] First Sum During Load from Global Memory\n"
                  "[5] Unrolling of the Last Warp using SIMD Execution\n"
-                 "Enter the version of sum reduction kernel to use (1-5): ";
+                 "Enter the version you wish to use (1-5): ";
     int version;
     std::cin >> version;
 
