@@ -20,11 +20,14 @@ matmul_compare:
 	nvprof ./matmul_cache_tiled
 
 convolution_1d:
-	nvcc src/convolution/convolution_1d.cu -o convolution_1d -run
+	nvcc src/convolution/convolution_1d.cu \
+		-o convolution_1d \
+		-run
 
 convolution_1d_constant_memory:
 	nvcc src/convolution/convolution_1d_constant_memory.cu \
-		-o convolution_1d_constant_memory -run
+		-o convolution_1d_constant_memory \
+		-run
 
 convolution_1d_compare:
 	nvcc src/convolution/convolution_1d.cu -o convolution_1d
@@ -34,10 +37,13 @@ convolution_1d_compare:
 
 sum_reduction:
 	nvcc src/sum_reduction/main.cu src/sum_reduction/sum_reduction.cu \
-		-o src/sum_reduction/main -run
+		-o src/sum_reduction/main \
+		-run
 
-sum_reduction_v5:
-	nvcc src/sum_reduction/sum_reduction_v5.cu -o sum_reduction_v5 -run
+sum_reduction_cooperative_groups
+	nvcc src/sum_reduction/sum_reduction_cooperative_groups \
+		 -o src/sum_reduction/sum_red_coop_groups \
+		 -run
 
 clean:
 	rm device_info \
