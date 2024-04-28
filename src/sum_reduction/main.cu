@@ -9,31 +9,37 @@ void init_vector(int *a, int N) {
 }
 
 int main() {
+        // Size of array whose sum we will compute
         int N = 1 << 24;
         size_t bytes = N * sizeof(int);
 
+        // Declare host arrays and device arrays
         int *input, *result;
         int *d_input, *d_result;
 
-        // Allocate CPU and GPU memory, populate input, and copy to device
+        // Allocate CPU and GPU memory
         input = (int*)malloc(bytes);
         result = (int*)malloc(bytes);
         cudaMalloc(&d_input, bytes);
         cudaMalloc(&d_result, bytes);
+
+        // Populate array
         init_vector(input, N);
+
+        // Copy to device
         cudaMemcpy(d_input, input, bytes, cudaMemcpyHostToDevice);
 
         // Block size (#threads) and grid size (#blocks)
         int blockSize = SHMEM_LEN;
         int gridSize = (N/2 + blockSize - 1) / blockSize; // Division by 2 is for v4-v5
 
-        // CUDA events for timing kernels
+        // CUDA events for timing the kernel
         cudaEvent_t start, stop;
         cudaEventCreate(&start);
         cudaEventCreate(&stop);
         float milliseconds = 0;
 
-        // Perform first kernel call
+        // Kernel decomposition
         cudaEventRecord(start);
         sum_reduction_v5<<<gridSize, blockSize>>>(d_input, d_result, N);
 
@@ -52,7 +58,7 @@ int main() {
         cudaEventSynchronize(stop);
         cudaEventElapsedTime(&milliseconds, start, stop);
 
-        // Copy to host
+        // Copy result to host
         cudaMemcpy(result, d_result, bytes, cudaMemcpyDeviceToHost);
 
         // Check result
