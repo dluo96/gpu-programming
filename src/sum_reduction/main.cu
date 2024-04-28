@@ -22,7 +22,7 @@ int main() {
     cudaMemcpy(d_input, input, bytes, cudaMemcpyHostToDevice);
 
     // Threads, blocks, grids, and dynamic shared memory
-    int blockSize = SIZE;
+    int blockSize = SHMEM_LEN;
     int gridSize = (N/2 + blockSize - 1) / blockSize; // Division by 2 is for v4-v5
     // int shmemSize = blockSize * sizeof(int);
 
