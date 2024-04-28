@@ -1,5 +1,5 @@
-#ifndef SUM_REDUCTION_H
-#define SUM_REDUCTION_H
+#ifndef SUM_REDUCTION_KERNELS_H
+#define SUM_REDUCTION_KERNELS_H
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>

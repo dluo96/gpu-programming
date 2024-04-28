@@ -7,7 +7,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "sum_reduction.h"
+#include "sum_reduction_kernels.h"
 
 // Kernel v1: Interleaved Addressing with Divergent Branches.
 // Disadvantages: thread divergence within warps are inefficient 

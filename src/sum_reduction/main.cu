@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cassert>
-#include "sum_reduction.h"
+#include "sum_reduction_kernels.h"
 
 void init_vector(int *a, int N) {
     for (int i = 0; i < N; i++) {
@@ -59,7 +59,7 @@ int main() {
         printf("Result: %d \n", result[0]);
         assert(result[0] == N);
         printf("Success! Computed sum reduction.\n");
-        printf("Time elapsed: %f milliseconds\n", milliseconds);
+        printf("Time elapsed: %f milliseconds.\n", milliseconds);
 
         // Cleanup
         cudaFree(d_input);
