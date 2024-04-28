@@ -9,7 +9,7 @@ This repository is a collection of notes and scripts I am compiling (no pun inte
  
 
 ### CUDA C/C++ Kernels
-- [x] CUDA C/C++ ["Hello, World!"](src/hello_world/hello_world.cu).
+- [x] ["Hello, World!"](src/hello_world/hello_world.cu).
 - [x] [SAXPY (single-precision A*X Plus Y)](src/saxpy/saxpy.cu).
 - [x] [Matrix multiplication](src/matrix_multiplication/matmul.cu). 
 - [x] [Matrix multiplication with cache tiling](src/matrix_multiplication/matmul_cache_tiled.cu). 
