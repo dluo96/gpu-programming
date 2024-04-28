@@ -5,7 +5,7 @@
 #include <math.h>
 #include <assert.h>
 #include <cuda_runtime.h>
-#include "sum_reduction_kernels.h"
+#include "sum_reduction.h"
 
 // #define SIZE 128
 // #define SHMEM_SIZE 128 * 4
