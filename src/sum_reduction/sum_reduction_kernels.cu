@@ -14,7 +14,7 @@
 // and the modulo (%) operator is slow. 
 __global__ void sum_reduction_v1(int *g_input, int *g_output, int numElements) {
     // Allocate dynamic shared memory
-    extern __shared__ unsigned int sdata[];
+    __shared__ unsigned int sdata[SHMEM_BYTES];
 
     // Global (relative to grid) and local (relative to block) thread IDs
     unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -51,7 +51,7 @@ __global__ void sum_reduction_v1(int *g_input, int *g_output, int numElements) {
 // branch in the inner loop with a strided index and non-divergent 
 // branch. This leads to a new drawback: shared memory bank conflicts. 
 __global__ void sum_reduction_v2(int *g_input, int *g_output, int numElements) {
-    extern __shared__ unsigned int sdata[];
+    __shared__ unsigned int sdata[SHMEM_BYTES];
     unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned int ltid = threadIdx.x;
 
@@ -97,7 +97,7 @@ __global__ void sum_reduction_v2(int *g_input, int *g_output, int numElements) {
 // Disadvantages: half of the threads are idle on the 1st iteration, 
 // three quarters of the threads are idle on the 2nd iteration, etc. 
 __global__ void sum_reduction_v3(int *g_input, int *g_output, int numElements) {
-    extern __shared__ unsigned int sdata[];
+    __shared__ unsigned int sdata[SHMEM_BYTES];
     unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned int ltid = threadIdx.x;
 
