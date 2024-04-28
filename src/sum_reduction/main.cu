@@ -75,25 +75,29 @@ int main() {
     // Hence there is no need for `cudaDeviceSynchronize` between kernel calls here.
     unsigned int numRemain = gridSize;
     while(numRemain > 1) {
-            gridSize = (numRemain/2 + blockSize - 1) / blockSize; // Division 2 is for v4-v5
-            switch (version) {
-                case 1:
-                    sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
-                    break;
-                case 2:
-                    sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
-                    break;
-                case 3:
-                    sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
-                    break;
-                case 4:
-                    sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
-                    break;
-                case 5:
-                    sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
-                    break;
-            }
-            numRemain = gridSize;
+        switch (version) {
+            case 1:
+                gridSize = (numRemain + blockSize - 1) / blockSize;
+                sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                break;
+            case 2:
+                gridSize = (numRemain + blockSize - 1) / blockSize;
+                sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                break;
+            case 3:
+                gridSize = (numRemain + blockSize - 1) / blockSize;
+                sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                break;
+            case 4:
+                gridSize = (numRemain/2 + blockSize - 1) / blockSize;
+                sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                break;
+            case 5:
+                gridSize = (numRemain/2 + blockSize - 1) / blockSize;
+                sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                break;
+        }
+        numRemain = gridSize;
     }
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
