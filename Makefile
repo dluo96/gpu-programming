@@ -37,12 +37,12 @@ convolution_1d_compare:
 
 sum_reduction:
 	nvcc src/sum_reduction/main.cu src/sum_reduction/sum_reduction_kernels.cu \
-		-o src/sum_reduction/main \
+		-o sum_reduction \
 		-run
 
 sum_reduction_cooperative_groups:
 	nvcc src/sum_reduction/sum_reduction_cooperative_groups.cu \
-		 -o src/sum_reduction/sum_red_coop_groups \
+		 -o sum_reduction_cooperative_groups \
 		 -run
 
 clean:
@@ -53,5 +53,5 @@ clean:
 		convolution_1d \
 		convolution_1d_constant_memory \
 		sum_reduction \
-		sum_reduction_v5
+		sum_reduction_cooperative_groups
 	
