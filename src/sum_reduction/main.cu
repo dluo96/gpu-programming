@@ -43,10 +43,6 @@ int main() {
     // Copy to device
     cudaMemcpy(d_input, input, bytes, cudaMemcpyHostToDevice);
 
-    // Block size (#threads) and grid size (#blocks)
-    int blockSize = SHMEM_LEN;
-    int gridSize = (N/2 + blockSize - 1) / blockSize; // Division by 2 is for v4-v5
-
     // CUDA events for timing the kernel
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
@@ -54,18 +50,30 @@ int main() {
     float milliseconds = 0;
 
     // Kernel decomposition
+    int blockSize = SHMEM_LEN; // In number of threads
+    int gridSize;
     cudaEventRecord(start);
     switch (version) {
         case 1:
-            sum_reduction_v1<<<gridSize, blockSize>>>(d_input, d_result, N); break;
+            gridSize = (N/2 + blockSize - 1) / blockSize;
+            sum_reduction_v1<<<gridSize, blockSize>>>(d_input, d_result, N); 
+            break;
         case 2:
-            sum_reduction_v2<<<gridSize, blockSize>>>(d_input, d_result, N); break;
+            gridSize = (N + blockSize - 1) / blockSize;
+            sum_reduction_v2<<<gridSize, blockSize>>>(d_input, d_result, N); 
+            break;
         case 3:
-            sum_reduction_v3<<<gridSize, blockSize>>>(d_input, d_result, N); break;
+            gridSize = (N + blockSize - 1) / blockSize;
+            sum_reduction_v3<<<gridSize, blockSize>>>(d_input, d_result, N);
+            break;
         case 4:
-            sum_reduction_v4<<<gridSize, blockSize>>>(d_input, d_result, N); break;
+            gridSize = (N/2 + blockSize - 1) / blockSize;
+            sum_reduction_v4<<<gridSize, blockSize>>>(d_input, d_result, N);
+            break;
         case 5:
-            sum_reduction_v5<<<gridSize, blockSize>>>(d_input, d_result, N); break;
+            gridSize = (N/2 + blockSize - 1) / blockSize;
+            sum_reduction_v5<<<gridSize, blockSize>>>(d_input, d_result, N);
+            break;
     }
 
     // Track how many partial results are left to be added and perform kernel 
