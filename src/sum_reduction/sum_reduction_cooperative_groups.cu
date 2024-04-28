@@ -55,19 +55,19 @@ __device__ int thread_sum(int *input, int N) {
     // For the thread in question, loop over the elements in the
     // array that this thread is responsible for adding. Each 
     // iteration of the loop skips ahead by the total number of
-    // threads in the grid. The n/4 comes from the fact that each
+    // threads in the grid. The N/4 comes from the fact that each
     // thread handles 4 elements at a time per loop iteration. 
     for (int i = tid; i < N / 4; i += blockDim.x * gridDim.x) {
         // With `int4`, we effectively read a block of four consecutive
         // integers from the array, starting at index 4*i. In particular, 
-        //      input[4*i]     gives in.x
-        //      input[4*i + 1] gives in.y
-        //      input[4*i + 2] gives in.z
-        //      input[4*i + 3] gives in.w
+        //      input[4*i]     gives quad.x
+        //      input[4*i + 1] gives quad.y
+        //      input[4*i + 2] gives quad.z
+        //      input[4*i + 3] gives quad.w
         // Using `int4` allows loading and adding four integers at a time,
         // improving memory throughput.
-        int4 in = ((int4*)input)[i];
-        sum += in.x + in.y + in.z + in.w;
+        int4 quad = ((int4*)input)[i];
+        sum += quad.x + quad.y + quad.z + quad.w;
     }
     return sum;
 }
