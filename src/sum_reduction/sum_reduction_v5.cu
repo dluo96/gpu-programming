@@ -78,7 +78,7 @@ int main() {
         int *input, *result;
         int *d_input, *d_result;
 
-        // Allocate CPU and GPU memory, initialise vector, and copy to device
+        // Allocate CPU and GPU memory, populate input, and copy to device
         input = (int*)malloc(bytes);
         result = (int*)malloc(bytes);
         cudaMalloc(&d_input, bytes);
@@ -86,10 +86,9 @@ int main() {
         init_vector(input, N);
         cudaMemcpy(d_input, input, bytes, cudaMemcpyHostToDevice);
 
-        // Set size of block (in number of threads) and
-        // size of grid (in number of blocks)
+        // Block size (#threads) and grid size (#blocks)
         int blockSize = SIZE;
-        int gridSize = (N/2 + blockSize - 1) / blockSize;
+        int gridSize = (N/2 + blockSize - 1) / blockSize; // Division by 2 is for v4-v5
 
         // CUDA events for timing kernels
         cudaEvent_t start, stop;
@@ -108,7 +107,7 @@ int main() {
         // Hence there is no need for `cudaDeviceSynchronize` between kernel calls here.
         unsigned int numRemain = gridSize;
         while(numRemain > 1) {
-                gridSize = (numRemain/2 + blockSize - 1) / blockSize;
+                gridSize = (numRemain/2 + blockSize - 1) / blockSize; // Division 2 is for v4-v5
                 sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
                 numRemain = gridSize;
         }
