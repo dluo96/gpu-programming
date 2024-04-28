@@ -35,7 +35,7 @@ int main() {
 
         // Perform first kernel call
         cudaEventRecord(start);
-        sum_reduction_v4<<<gridSize, blockSize>>>(d_input, d_result, N);
+        sum_reduction_v5<<<gridSize, blockSize>>>(d_input, d_result, N);
 
         // Track how many partial results are left to be added and perform kernel 
         // decomposition with recursion.
@@ -45,7 +45,7 @@ int main() {
         unsigned int numRemain = gridSize;
         while(numRemain > 1) {
                 gridSize = (numRemain/2 + blockSize - 1) / blockSize; // Division 2 is for v4-v5
-                sum_reduction_v4<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
                 numRemain = gridSize;
         }
         cudaEventRecord(stop);
