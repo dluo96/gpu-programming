@@ -36,9 +36,9 @@
     - Memory clock rate of 5.001 GHz with GDDR memory.
     It follows that the *theoretical* **peak bandwidth** is **320.064 GB/s**. We will try to get as close to this as possible. 
 
-## Versions 1-7
+## Versions 1-5
 ### Bandwidth Comparison
-- We compared the bandwidth of the 7 sum reduction implementations. 
+- We compared the bandwidth of the 5 sum reduction implementations. 
 - All of the experiments were run with the following assumptions:
     - Tesla T4 GPU,
     - Thread block size of 128,
@@ -57,8 +57,6 @@
 | **Version 5:** unrolling the last warp by utilising SIMD (special case of SIMT) | 0.35            | 191.7                          | 59.9%                               |
 
 ### Version 1: Interleaved Addressing with Warp Divergence
-If threads within a warp execute in lockstep i.e. same instruction at the same time, what happens when there is warp divergence?
-
 
 
 ### Version 5: Unrolling the Last Warp
