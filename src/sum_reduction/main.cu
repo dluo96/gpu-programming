@@ -9,6 +9,20 @@ void init_vector(int *a, int N) {
 }
 
 int main() {
+    std::cout << "[1] Interleaved Addressing with Warp Divergence\n"
+                 "[2] Interleaved Addressing with Shared Memory Bank Conflicts\n"
+                 "[3] Sequential Addressing\n"
+                 "[4] First Sum During Load from Global Memory\n"
+                 "[5] Unrolling of the Last Warp using SIMD Execution\n"
+                 "Enter the version of sum reduction kernel to use (1-5): ";
+    int version;
+    std::cin >> version;
+
+    if (version < 1 || version > 5) {
+        std::cerr << "Invalid version number. Please choose between 1 and 5." << std::endl;
+        return EXIT_FAILURE;
+    }
+
     // Size of array whose sum we will compute
     int N = 1 << 24;
     size_t bytes = N * sizeof(int);
@@ -41,7 +55,18 @@ int main() {
 
     // Kernel decomposition
     cudaEventRecord(start);
-    sum_reduction_v5<<<gridSize, blockSize>>>(d_input, d_result, N);
+    switch (version) {
+        case 1:
+            sum_reduction_v1<<<gridSize, blockSize>>>(d_input, d_result, N); break;
+        case 2:
+            sum_reduction_v2<<<gridSize, blockSize>>>(d_input, d_result, N); break;
+        case 3:
+            sum_reduction_v3<<<gridSize, blockSize>>>(d_input, d_result, N); break;
+        case 4:
+            sum_reduction_v4<<<gridSize, blockSize>>>(d_input, d_result, N); break;
+        case 5:
+            sum_reduction_v5<<<gridSize, blockSize>>>(d_input, d_result, N); break;
+    }
 
     // Track how many partial results are left to be added and perform kernel 
     // decomposition with recursion.
@@ -51,7 +76,23 @@ int main() {
     unsigned int numRemain = gridSize;
     while(numRemain > 1) {
             gridSize = (numRemain/2 + blockSize - 1) / blockSize; // Division 2 is for v4-v5
-            sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+            switch (version) {
+                case 1:
+                    sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                    break;
+                case 2:
+                    sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                    break;
+                case 3:
+                    sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                    break;
+                case 4:
+                    sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                    break;
+                case 5:
+                    sum_reduction_v5<<<gridSize, blockSize>>>(d_result, d_result, numRemain);
+                    break;
+            }
             numRemain = gridSize;
     }
     cudaEventRecord(stop);
