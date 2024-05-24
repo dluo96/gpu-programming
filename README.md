@@ -23,6 +23,8 @@ This repository is a collection of notes and scripts I am compiling (no pun inte
 - [x] [Sum reduction: first sum during load from global memory](src/sum_reduction/sum_reduction_kernels.cu#129).
 - [x] [Sum reduction: unrolling of the last warp using SIMD execution](src/sum_reduction/sum_reduction_kernels.cu#177).
 - [x] [Sum reduction using Cooperative Groups (CUDA 9 and above)](src/sum_reduction/sum_reduction_cooperative_groups.cu).
+- [ ] Pointwise ops: ReLU. 
+- [ ] Pointwise ops: ReLU with shared memory. 
 - [ ] CUDA Streams. See [here](https://github.com/NVIDIA-developer-blog/code-samples/blob/master/series/cuda-cpp/overlap-data-transfers/async.cu) and [here](https://leimao.github.io/blog/CUDA-Stream/) and [here](https://developer.nvidia.com/blog/how-overlap-data-transfers-cuda-cc/). 
 
 ### Analysis Programs
