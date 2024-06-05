@@ -51,7 +51,7 @@ See the [Makefile](Makefile) for a more complete list of commands you can run.
 
 
 ### Device Query
-If you wish to query your device, run the following:
+To query the amount of resources available for your device, run:
 ```bash
 nvcc src/device_info.cu -o device_info -run
 ```
