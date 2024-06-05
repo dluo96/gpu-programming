@@ -11,7 +11,7 @@ This repository is a collection of notes and scripts I am compiling (no pun inte
 ### CUDA C/C++ Kernels
 - [x] ["Hello, World!"](src/hello_world/hello_world.cu).
 - [x] [SAXPY (single-precision A*X Plus Y)](src/saxpy/saxpy.cu).
-- [x] [Matrix multiplication.](src/matrix_multiplication/matmul.cu). 
+- [x] [Matrix multiplication](src/matrix_multiplication/matmul.cu). 
 - [x] [Matrix multiplication with cache tiling](src/matrix_multiplication/matmul_cache_tiled.cu). 
 - [x] [Matrix multiplication kernel where each thread computes one row of the output matrix](src/matrix_multiplication/matmul_thread_row.cu).
 - [x] [Matrix multiplication kernel where each thread computes one column of the output matrix](src/matrix_multiplication/matmul_thread_col.cu).
@@ -38,26 +38,22 @@ This repository is a collection of notes and scripts I am compiling (no pun inte
 To run the CUDA scripts in this repo, you will need to be set up with a host machine that has a CUDA-enabled GPU and `nvcc` installed.
 
 ## Usage
-### CUDA C/C++ "Hello, World!"
-Compile and execute with `nvcc`:
+In general, you can compile and execute a CUDA source file as follows:
+```bash
+nvcc /path/to/source.cu -o /path/to/executable -run
+```
+For example, you can run the "Hello, World!" kernel using: 
 ```bash
 nvcc src/hello_world.cu -o hello_world -run
 ```
 Note that `.cu` is the required file extension for CUDA-accelerated programs.
+See the [Makefile](Makefile) for a more complete list of commands you can run.
+
 
 ### Device Query
+If you wish to query your device, run the following:
 ```bash
 nvcc src/device_info.cu -o device_info -run
-```
-
-### SAXPY Kernel with CUDA C/C++
-```bash
-nvcc src/saxpy.cu -o saxpy -run
-```
-
-### Matrix Multiplication Kernel with CUDA C/C++
-```
-nvcc src/matmul.cu -o matmul -run
 ```
 
 ## References
@@ -77,3 +73,4 @@ nvcc src/matmul.cu -o matmul -run
 - [CUDA Crash Course by CoffeeBeforeArch](https://www.youtube.com/playlist?list=PLxNPSjHT5qvtYRVdNN1yDcdSl39uHV_sU)
 - [From Scratch: Matrix Multiplication in CUDA](https://www.youtube.com/watch?v=DpEgZe2bbU0)
 - [From Scratch: Cache Tiled Matrix Multiplication in CUDA](https://www.youtube.com/watch?v=ga2ML1uGr5o)
+- [Programming Massively Parallel Processors (4th Edition)](https://www.amazon.co.uk/Programming-Massively-Parallel-Processors-Hands/dp/0323912311).
