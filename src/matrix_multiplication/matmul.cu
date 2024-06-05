@@ -78,7 +78,7 @@ int main() {
     // Note that we need to calculate the number of blocks needed in each dimension to cover the entire 
     // output matrix of size N x N.
     int threadsPerBlockDim = 16;
-    int blocksPerGridDim = (N + threadsPerBlockDim - 1);
+    int blocksPerGridDim = (N + threadsPerBlockDim - 1) / threadsPerBlockDim;
     dim3 THREADS(threadsPerBlockDim, threadsPerBlockDim);
     dim3 BLOCKS(blocksPerGridDim, blocksPerGridDim);
 
