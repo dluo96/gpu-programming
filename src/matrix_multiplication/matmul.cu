@@ -94,7 +94,7 @@ int main() {
     // Verify the result
     verify_result(a, b, c, N);
 
-    printf("Success! Computed matrix multiplication (naive implementation).\n");
+    printf("Success! Computed matrix multiplication where each thread computes one element of the output matrix.\n");
     return 0;
 }
 
