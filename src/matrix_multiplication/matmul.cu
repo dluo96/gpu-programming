@@ -1,4 +1,5 @@
-// CUDA C/C++ implementation of GPU kernel for matrix multiplication of square matrices.
+// Matrix multiplication kernel where each thread computes one element of the output matrix.
+// Assumptions: inputs are square matrices. 
 
 
 #include <stdio.h>
@@ -79,15 +80,15 @@ int main() {
     // output matrix of size N x N.
     int threadsPerBlockDim = 16;
     int blocksPerGridDim = (N + threadsPerBlockDim - 1) / threadsPerBlockDim;
-    dim3 THREADS(threadsPerBlockDim, threadsPerBlockDim);
-    dim3 BLOCKS(blocksPerGridDim, blocksPerGridDim);
+    dim3 dimBlock(threadsPerBlockDim, threadsPerBlockDim);
+    dim3 dimGrid(blocksPerGridDim, blocksPerGridDim);
 
     // Invoke matrix multiplication kernel: every launched thread
     // will calculate one element of the resulting matrix
-    matMul<<<BLOCKS, THREADS>>>(a, b, c, N);
+    matMul<<<dimGrid, dimBlock>>>(a, b, c, N);
 
     // As we are not doing a Memcpy (a synchronizing operation) due to using `cudaMallocManaged`,
-    // we can instead:
+    // we need synchronize explicitly:
     cudaDeviceSynchronize();
 
     // Verify the result
