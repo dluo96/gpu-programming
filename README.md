@@ -11,8 +11,11 @@ This repository is a collection of notes and scripts I am compiling (no pun inte
 ### CUDA C/C++ Kernels
 - [x] ["Hello, World!"](src/hello_world/hello_world.cu).
 - [x] [SAXPY (single-precision A*X Plus Y)](src/saxpy/saxpy.cu).
-- [x] [Matrix multiplication](src/matrix_multiplication/matmul.cu). 
+- [x] [Matrix multiplication.](src/matrix_multiplication/matmul.cu). 
 - [x] [Matrix multiplication with cache tiling](src/matrix_multiplication/matmul_cache_tiled.cu). 
+- [x] [Matrix multiplication kernel where each thread computes one row of the output matrix](src/matrix_multiplication/matmul_thread_row.cu).
+- [x] [Matrix multiplication kernel where each thread computes one column of the output matrix](src/matrix_multiplication/matmul_thread_col.cu).
+- [x] [Matrix-vector multiplication kernel](src/matrix_multiplication/matvec_mul.cu).
 - [x] [1D convolution](src/convolution/convolution_1d.cu).
 - [x] [1D convolution with constant memory](src/convolution/convolution_1d_constant_memory.cu).
 - [ ] 1D convolution with tiling.
