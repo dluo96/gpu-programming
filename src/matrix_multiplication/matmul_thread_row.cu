@@ -1,5 +1,6 @@
 // Matrix multiplication kernel where each thread produces one output matrix row.
 // Assumptions: inputs are square matrices. 
+// Note: Exercise 1.a. in Chapter 3 of the PMPP book.
 
 #include <stdio.h>
 #include <cstdlib>

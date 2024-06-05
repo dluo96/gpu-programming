@@ -1,5 +1,6 @@
 // Matrix-vector multiplication kernel where each thread calculates an output vector element.
 // Assumptions: input matrix is square.
+// Note: Exercise 2. in Chapter 3 of the PMPP book.
 
 #include <stdio.h>
 #include <cstdlib>
