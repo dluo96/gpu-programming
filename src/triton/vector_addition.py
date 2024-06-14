@@ -117,5 +117,6 @@ if __name__ == "__main__":
     print(f'The maximum difference between torch and triton is '
         f'{torch.max(torch.abs(output_torch - output_triton))}')
 
-    # Compare performance of custom Triton kernel and PyTorch. Durations are in milliseconds.
+    # Compare the performance (specifically the global memory bandwidth) of 
+    # our custom Triton kernel and PyTorch's elementwise vector addition.
     benchmark.run(print_data=True, save_path="/home/danielluo/cuda-c/benchmarks/")
