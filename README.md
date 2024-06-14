@@ -1,14 +1,12 @@
-# GPUs and CUDA C/C++
-This repository is a collection of notes and scripts I am compiling (no pun intended!) to better understand GPUs and CUDA programming. Enjoy! 
+# GPU Programming
+This repository is a collection of notes, diagrams, and kernels that I am compiling (no pun intended!) to better understand GPU programming. To that end, I focus mainly on implementing GPU kernels in CUDA C and Triton. 
 
 ### Notes
 - [x] Introduction to [GPU compute](docs/gpu_compute.md) for CUDA-capable GPUs. Covers parallel computing terms including kernels, streaming multiprocessors (SMs), CUDA cores, threads, warps, thread blocks, grids.
 - [x] Introduction to [GPU memory](docs/gpu_memory.md). Covers concepts including registers, L1 cache, L2 cache, shared memory, global memory, memory clock rate, memory bus width, peak memory bandwidth.
-- [ ] Introduction to the **NVIDIA CUDA Compiler (NVCC) Driver**.
-- [ ] Introduction to the **NVIDIA Nsight Compute CLI (ncu)**.
  
 
-### CUDA C/C++ Kernels
+### CUDA C kernels
 - [x] ["Hello, World!"](src/hello_world/hello_world.cu).
 - [x] [SAXPY (single-precision A*X Plus Y)](src/saxpy/saxpy.cu).
 - [x] [Matrix multiplication](src/matrix_multiplication/matmul.cu). 
@@ -28,11 +26,13 @@ This repository is a collection of notes and scripts I am compiling (no pun inte
 - [x] [Sum reduction using Cooperative Groups (CUDA 9 and above)](src/sum_reduction/sum_reduction_cooperative_groups.cu).
 - [ ] Pointwise ops: ReLU. 
 - [ ] Pointwise ops: ReLU with shared memory. 
-- [ ] CUDA Streams. See [here](https://github.com/NVIDIA-developer-blog/code-samples/blob/master/series/cuda-cpp/overlap-data-transfers/async.cu) and [here](https://leimao.github.io/blog/CUDA-Stream/) and [here](https://developer.nvidia.com/blog/how-overlap-data-transfers-cuda-cc/). 
 
-### Analysis Programs
+## Triton kernels
+- [x] [Vector addition](src/triton/vector_addition.py).
+
+## Other programs
 - [x] [Program](src/device_info.cu) that extracts the properties of the attached CUDA device(s).
-- [ ] Profiling with `clock()`.
+- [ ] CUDA Streams. See [here](https://github.com/NVIDIA-developer-blog/code-samples/blob/master/series/cuda-cpp/overlap-data-transfers/async.cu) and [here](https://leimao.github.io/blog/CUDA-Stream/) and [here](https://developer.nvidia.com/blog/how-overlap-data-transfers-cuda-cc/). 
 
 ## Setup
 To run the CUDA scripts in this repo, you will need to be set up with a host machine that has a CUDA-enabled GPU and `nvcc` installed.
@@ -50,7 +50,7 @@ Note that `.cu` is the required file extension for CUDA-accelerated programs.
 See the [Makefile](Makefile) for a more complete list of commands you can run.
 
 
-### Device Query
+### Device query
 To query the amount of resources available for your device, run:
 ```bash
 nvcc src/device_info.cu -o device_info -run
