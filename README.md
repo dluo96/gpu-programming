@@ -29,6 +29,7 @@ This repository is a collection of notes, diagrams, and kernels that I am compil
 
 ## Triton kernels
 - [x] [Vector addition](src/triton/vector_addition.py).
+- [x] [Fused softmax](src/triton/fused_softmax.py).
 
 ## Other programs
 - [x] [Program](src/device_info.cu) that extracts the properties of the attached CUDA device(s).
