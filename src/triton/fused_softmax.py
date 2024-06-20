@@ -33,7 +33,7 @@ def softmax_kernel(
     # Thus, we can parallelize across rows.
 
     # Each program starts from a different row. It handles one row at a time but
-    # potentially multiple rows overall.
+    # possibly multiple rows overall (depending of the number of programs).
     row_start = tl.program_id(axis=0)
     row_step = tl.num_programs(axis=0)
 
@@ -41,17 +41,17 @@ def softmax_kernel(
     # Each iteration of the loop corresponds to a program computing the softmax
     # for one row.
     for row_idx in tl.range(row_start, n_rows, row_step, num_stages=num_stages):
-        # Stride tells us how much we need to increase the pointer to advance 1 row
-        # This is usually the number of columns of the input. 
+        # The row stride denotes how much we need to increment the pointer to 
+        # advance 1 row. This is usually the number of columns of the input. 
         row_start_ptr = input_ptr + row_idx * input_row_stride
 
-        # The block size was set to be the next power of two greater than n_cols, 
+        # The block size was set to be the next power of two greater than `n_cols`, 
         # so we can fit each row in a single block.
         col_offsets = tl.arange(0, BLOCK_SIZE)
         input_ptrs = row_start_ptr + col_offsets  # List of pointers to the row elements
 
-        # Load the row into SRAM, using a mask since BLOCK_SIZE may be greater than n_cols
-        # Note out-of-bonds elements won’t affect the sum since exp(-inf)=0.
+        # Load the row into SRAM, using a mask since `BLOCK_SIZE` may be greater than
+        # `n_cols`. Note out-of-bound elements won’t affect the sum since exp(-inf)=0.
         mask = col_offsets < n_cols
         row = tl.load(input_ptrs, mask=mask, other=-float('inf'))
 
@@ -78,8 +78,8 @@ def softmax(x: torch.Tensor) -> torch.Tensor:
 
     # Ask the compiler to use more threads per row by increasing the number of warps 
     # (`num_warps`) over which the softmax calculation for each row is distributed. 
-    # In this case, each kernel instance will be automatically parallelized to 
-    # cooperatively execute using 8 * 32 = 256 threads. 
+    # In this case, each kernel instance (program) will be automatically parallelized
+    # to cooperatively execute using 8 * 32 = 256 threads. 
     num_warps = 8
 
     # Number of stages that the compiler should use when software-pipelining loops
@@ -176,6 +176,5 @@ if __name__ == "__main__":
         gbps = lambda ms: 2 * x.nelement() * x.element_size() * 1e-9 / (ms * 1e-3)
 
         return gbps(ms)
-
 
     benchmark.run(print_data=True, save_path="/home/danielluo/cuda-c/benchmarks/softmax/")
