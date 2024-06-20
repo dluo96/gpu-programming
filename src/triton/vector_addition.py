@@ -15,14 +15,15 @@ def add_kernel(
     y_ptr,
     output_ptr,
     n_elements,
-    BLOCK_SIZE: tl.constexpr,  # Number of elements each 'program' should process.
+    BLOCK_SIZE: tl.constexpr,
 ):
-    # There are multiple 'programs' each processing different data.
-    # Because we will use a 1D launch grid, we set the "axis" to 0.
+    # There are multiple "programs" each processing different parts of the data.
+    # Each program is uniquely identified by its `program_id`. Because we will 
+    # use a 1D launch grid, we set "axis" to 0.
     pid = tl.program_id(axis=0)
 
     # Each program handles `BLOCK_SIZE` elements. For example, if we have a vector
-    # of length 256 and set the block size to 64, the cdiv(256, 64) = 4 programs 
+    # with 256 elements and set the block size to 64, the cdiv(256, 64) = 4 programs 
     # would access the elements 0:64, 64:128, 128:192, and 192:256.
     block_start = pid * BLOCK_SIZE
     offsets = block_start + tl.arange(0, BLOCK_SIZE)  # List of pointers
