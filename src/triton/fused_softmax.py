@@ -8,12 +8,12 @@ from triton.runtime import driver
 
 device = torch.cuda.current_device()
 properties = driver.active.utils.get_device_properties(device)
-NUM_SM = properties["multiprocessor_count"]     # Number of streaming multiprocessors (SMs)
-NUM_REGISTERS = properties["max_num_regs"]      # Maximum number of registers
-SIZE_SMEM = properties["max_shared_mem"]        # Size of shared memory in bytes
-WARP_SIZE = properties["warpSize"]              # Number of threads in a warp
+NUM_SM = properties["multiprocessor_count"]
+NUM_REGISTERS_PER_SM = properties["max_num_regs"]
+SIZE_SHMEM_PER_SM = properties["max_shared_mem"]
+WARP_SIZE = properties["warpSize"]
 target = triton.runtime.driver.active.get_current_target()
-kernels = {}
+dict_kernels = {}  # Cache precompiled kernels based on their block size
 
 # import os
 # os.environ["TRITON_INTERPRET"] = "1"
@@ -83,7 +83,7 @@ def softmax(x: torch.Tensor) -> torch.Tensor:
     num_warps = 8
 
     # Number of stages that the compiler should use when software-pipelining loops
-    num_stages = 4 if SIZE_SMEM > 200_000 else 2
+    num_stages = 4 if SIZE_SHMEM_PER_SM > 200_000 else 2
 
     # Allocate output
     y = torch.empty_like(x)
@@ -95,9 +95,19 @@ def softmax(x: torch.Tensor) -> torch.Tensor:
     input_row_stride=x.stride(dim=0)    
     output_row_stride=y.stride(dim=0)
 
-    # Pre-compile kernel to get register usage and compute thread occupancy.
-    kernel, num_programs = kernels.get(BLOCK_SIZE, (None, 0))
+    # Check if a kernel for the given `BLOCK_SIZE` is already cached. If not, then
+    # pre-compile the kernel to get register usage and compute thread occupancy.
+    kernel, num_programs = dict_kernels.get(BLOCK_SIZE, (None, 0))
     if kernel is None:
+        # "warmup" is a process used to pre-compile a kernel and gather information 
+        # about its resource usage, including the number of registers and the amount
+        # of shared memory it uses. This step is crucial for optimizing kernel 
+        # performance as it allows the Triton compiler to perform initial compilation
+        # and prepare the kernel for efficient execution.
+        # This step does not execute the kernel on actual data but ensures that when
+        # the kernel is subsequently launched, it runs with the best possible settings.
+        # The grid size of (1,) ensures minimal overhead and quick retrieval of kernel
+        # resource usage information.
         kernel = softmax_kernel.warmup(
             x,
             y,
@@ -111,18 +121,38 @@ def softmax(x: torch.Tensor) -> torch.Tensor:
             grid=(1, )
         )
 
+        # Initialise internal handles and gather metadata about the kernel, including
+        # register usage and shared memory requirements
         kernel._init_handles()
-        n_registers = kernel.n_regs
-        size_smem = kernel.metadata.shared
-        occupancy = NUM_REGISTERS // (n_registers * WARP_SIZE * num_warps)
-        occupancy = min(occupancy, SIZE_SMEM // size_smem)
-        num_programs = NUM_SM * occupancy
-        kernels[BLOCK_SIZE] = (kernel, num_programs)
+        n_registers_per_thread = kernel.n_regs
+        size_shmem_per_instance = kernel.metadata.shared
 
-    # If the number of programs allowed by the the SM count and the occupancy
-    # is larger than the number of rows, simply make each program/instance
-    # perform softmax for only a single row. In this case, the grid dimension
-    # (number of programs/instances) is simply equal to the number of rows.
+        # Calculate occupancy (defined here as the maximum number of programs/instances 
+        # that can run simultaneously on a single SM) based on register usage. The 
+        # calculation divides the total number of registers in an SM by the number of 
+        # registers used per kernel instance (since WARP_SIZE * num_warps is the number
+        # of threads per instance).
+        occupancy = NUM_REGISTERS_PER_SM // (n_registers_per_thread * WARP_SIZE * num_warps)
+
+        # Occupancy can be limited by register usage or shared memory. 
+        # The minimum of register-based occupancy and shared-memory based occupancy is
+        # chosen.
+        occupancy = min(occupancy, SIZE_SHMEM_PER_SM // size_shmem_per_instance)
+
+        # Number of programs = (Number of SMs) * (Programs/SM).
+        # This is number of concurrent kernel instances that can run on an SM.
+        num_programs = NUM_SM * occupancy
+
+        # Cache the compiled kernel and its number of programs/instances for future use.
+        dict_kernels[BLOCK_SIZE] = (kernel, num_programs)
+
+    # Ensures that the number of concurrent kernel instances in the grid does not exceed
+    # the number of rows in the input tensor. While the GPU might be able to handle a
+    # large number of kernel instances concurrently based on its hardware limits, the 
+    # actual number of kernel instances needed is limited by the number of rows in the 
+    # input tensor. If the number of programs that the hardware can support is larger
+    # than the number of rows, simply make the number of programs actually used equal
+    # to the number of rows such that each program handles exactly one row. 
     num_programs = min(num_programs, n_rows)
 
     # Create a number of persistent programs.
