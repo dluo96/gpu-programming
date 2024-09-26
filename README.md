@@ -25,11 +25,7 @@ This repository is a collection of notes, diagrams, and kernels that I am compil
 - [x] [Sum reduction: unrolling of the last warp using SIMD execution](src/sum_reduction/sum_reduction_kernels.cu#177).
 - [x] [Sum reduction using Cooperative Groups (CUDA 9 and above)](src/sum_reduction/sum_reduction_cooperative_groups.cu).
 - [ ] Pointwise ops: ReLU. 
-- [ ] Pointwise ops: ReLU with shared memory. 
-
-## Triton kernels
-- [x] [Vector addition](src/triton/vector_addition.py).
-- [x] [Fused softmax](src/triton/fused_softmax.py).
+- [ ] Pointwise ops: ReLU with shared memory.
 
 ## Other programs
 - [x] [Program](src/device_info.cu) that extracts the properties of the attached CUDA device(s).
